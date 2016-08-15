@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Exec=/usr/bin/udiskie -2 --tray
+Hidden=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=Config
+Name=Config

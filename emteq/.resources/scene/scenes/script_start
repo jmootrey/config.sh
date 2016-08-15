@@ -1,0 +1,17 @@
+#!/bin/bash
+# helper script to start scene scripts 2/20/2014
+if [ -d "/opt/scenes" ]; then
+        cd /opt/scenes
+else
+        exit 0
+fi
+if [ -e "./$1" ]; then
+        isbash=`head -n 1 ./$1 | grep "/bin/bash"`
+        if [ ${#isbash} -gt 1 ]; then
+                ./$1 &
+                exit 2
+        else
+                exit 1
+        fi
+fi
+exit 0

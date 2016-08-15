@@ -1,0 +1,18 @@
+# 
+# /etc/fstab: static file system information
+#
+# <file system>	<dir>	<type>	<options>	<dump>	<pass>
+# UUID=2ca42658-aeb6-4528-b87e-5ff5717f5318
+/dev/sda2           	/         	ext4      	rw,relatime,data=ordered	0 1
+
+# UUID=484a5901-3ffa-4063-b210-ea185ed7af08
+/dev/sda1           	/boot     	ext4      	rw,relatime,stripe=4,data=ordered	0 2
+
+# UUID=d8ac8d81-dd73-4331-9a82-e6f1878fec56
+/dev/sda3           	/home     	ext4      	rw,relatime,data=ordered	0 2
+
+# UUID=7cf4b206-f2fe-4c02-9e25-ebcb60bbbf38
+/dev/sda4           	none      	swap      	defaults  	0 0
+
+# econnect firmware 
+/home/emteq/.resources/iso/econnect-firmware.img	/home/emteq/.resources/iso/firmware/optfs	auto	noauto,users,rw,offset=4194892800,loop	0 0

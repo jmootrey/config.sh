@@ -1,0 +1,5 @@
+#!/bin/bash
+/mnt/user/icdapp REFRESH_MEDIA_FILES 0
+sleep 2
+/mnt/user/icdapp UPDATE_SOFTWARE /mnt/user/upload/$1
+

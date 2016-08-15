@@ -1,0 +1,14 @@
+#EXTM3U
+#EXT-X-TARGETDURATION: 1
+#EXT-X-VERSION: 3
+#EXT-X-MEDIA-SEQUENCE: 4413
+#EXTINF: 0.9813,	
+filesequence4413.ts
+#EXTINF: 0.9813,	
+filesequence4414.ts
+#EXTINF: 0.9813,	
+filesequence4415.ts
+#EXTINF: 0.9813,	
+filesequence4416.ts
+#EXTINF: 0.9813,	
+filesequence4417.ts
