@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Exec=/usr/bin/terminator -f -p emteq -x /home/emteq/config.sh
-Hidden=false
-X-GNOME-Autostart-enabled=true
-Name[en_US]=Config
-Name=Config
