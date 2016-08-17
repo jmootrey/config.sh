@@ -9,9 +9,11 @@
 #mysql client
 
 
-#VERSION 2.0.0
 #Changelog
-#2.0.2
+#2.1.0 
+#Incorporate CWR451 
+#selection 
+#2.0.2 
 #Updated some user selection entries to match order form.
 #2.0.1
 #Check for autoupdate.sh before allowing run mode change
@@ -56,22 +58,30 @@ image=3
 preimage=4
 clean=5
 
+#import settings
+source ./.config.cfg
+
+#update settings
+function cfg_update () {
+sed -i "s/\($1 *= *\).*/\1\'$2/\'" ./config.cfg
+}
+
 #system variables
-c2=$( cat /home/emteq/.c2 )
-econip=$( cat /home/emteq/.econip )
-econapp=$( cat /home/emteq/.econapp )
-iso=$( cat /home/emteq/.iso )
-encoder=$( cat /home/emteq/.encoder )
+#c2=$( cat /home/emteq/.c2 ) 
+#econip=$( cat /home/emteq/.econip )
+#econapp=$( cat /home/emteq/.econapp )
+#iso=$( cat /home/emteq/.iso )
+#encoder=$( cat /home/emteq/.encoder )
 res=0
-ver="2.0.3"
+ver="2.1.0"
 dir="/home/emteq/.resources/"
 dbdir=${dir}db/
 dbstatic=${dir}/dbstatic/
 confdir=${dir}/config/
 resfile="c2/src/presentation/resources/resource.json"
-for i in 1 2 ; do
-  dbfiles[$i]=$( head -n $i /home/emteq/.dbfiles | tail -1 )
-done
+#for i in 1 2 ; do
+#  dbfiles[$i]=$( head -n $i /home/emteq/.dbfiles | tail -1 )
+#done
 #cnt=1
 
 
@@ -85,6 +95,7 @@ function header {
 }
 
 #getconfigfile - Count configuration files that require transfer
+#this function may be depricatedi XXXXXXXXXXXXXXXX
 function getconfigfile {
 cnt=1
 config_file_cnt=$( find ${dir}config/ -maxdepth 1 -type f | wc -l )
@@ -139,50 +150,55 @@ done
 #makekey - Loads selected Map to Flash Drive. 
 function makekey {
  header
- echo " "
- echo "Insert USB flash disk. USB flash disk must be at least 32Gb"
- echo "Warning, This USB flash disk will be formatted!"
- echo "All Data will be lost!"
- echo " "
- echo -n "Press any key to continue"
- read junk
- usbkeysel
- if [ $usbselect = "x" ] ; then 
-  return
- fi
- echo " "
- echo "Now Formatting, " ${usbkey[$usbselect]} " please wait..."
- case "$map" in
-   1) echo $format ${usbkey[$usbselect]} "northamerica" >/dev/tcp/localhost/5349;; 
-   2) echo $format ${usbkey[$usbselect]} "europe" >/dev/tcp/localhost/5349;; 
-   3) echo $format ${usbkey[$usbselect]} "africa" >/dev/tcp/localhost/5349;; 
-   4) echo $format ${usbkey[$usbselect]} "southamerica" >/dev/tcp/localhost/5349;; 
-   5) echo $format ${usbkey[$usbselect]} "asia" >/dev/tcp/localhost/5349;; 
-   6) echo $format ${usbkey[$usbselect]} "world" >/dev/tcp/localhost/5349;;
-   x) return;;
- esac
- junk=$(nc -l 127.0.0.1 -p 5350)
- echo "Formatting Complete"
- echo " "
- echo "Beginning File Transfer..."
- case "$map" in
-   1) rsync -h --progress ${dir}map/update_MMAP_northamerica.tgz ${dir}mount/update_MMAP_northamerica.tgz;;
-   2) rsync -h --progress ${dir}map/update_MMAP_europe.tgz ${dir}mount/update_MMAP_europe.tgz;;
-   3) rsync -h --progress ${dir}map/update_MMAP_middleeast.tgz ${dir}mount/update_MMAP_middleeast.tgz;;
-   4) rsync -h --progress ${dir}map/update_MMAP_southamerica.tgz ${dir}mount/update_MMAP_southamerica.tgz;;
-   5) rsync -h --progress ${dir}map/update_MMAP_asia.tgz ${dir}mount/update_MMAP_asia.tgz;;
-   6) rsync -h --progress ${dir}map/update_MMAP_world.tgz ${dir}mount/update_MMAP_world.tgz;;
- esac
- echo " "
- echo "Finalizing.... Please do not remove USB flash disk."
- echo $unmount >/dev/tcp/localhost/5349
- junk=$(nc -l 127.0.0.1 -p 5350)          
- echo "USB flash disk may now be removed"
- echo -n "Press any key to continue."
- read junk
+  case "$map" in
+    [1-5]) dsize='8GB';;
+    *) dsize='32GB';; 
+  esac
+  echo " "
+  echo "Insert USB flash disk. USB flash disk must be at least " $dsize
+  echo "Warning, This USB flash disk will be formatted!"
+  echo "All Data will be lost!"
+  echo " "
+  echo -n "Press any key to continue"
+  read junk
+  usbkeysel
+  if [ $usbselect = "x" ] ; then 
+   return
+  fi
+  echo " "
+  echo "Now Formatting, " ${usbkey[$usbselect]} " please wait..."
+  case "$map" in
+    1) echo $format ${usbkey[$usbselect]} "northamerica" >/dev/tcp/localhost/5349;; 
+    2) echo $format ${usbkey[$usbselect]} "europe" >/dev/tcp/localhost/5349;; 
+    3) echo $format ${usbkey[$usbselect]} "africa" >/dev/tcp/localhost/5349;; 
+    4) echo $format ${usbkey[$usbselect]} "southamerica" >/dev/tcp/localhost/5349;; 
+    5) echo $format ${usbkey[$usbselect]} "asia" >/dev/tcp/localhost/5349;; 
+    6) echo $format ${usbkey[$usbselect]} "world" >/dev/tcp/localhost/5349;;
+    x) return;;
+  esac
+  junk=$(nc -l 127.0.0.1 -p 5350)
+  echo "Formatting Complete"
+  echo " "
+  echo "Beginning File Transfer..."
+  case "$map" in
+    1) rsync -h --progress ${dir}map/update_MMAP_northamerica.tgz ${dir}mount/update_MMAP_northamerica.tgz;;
+    2) rsync -h --progress ${dir}map/update_MMAP_europe.tgz ${dir}mount/update_MMAP_europe.tgz;;
+    3) rsync -h --progress ${dir}map/update_MMAP_middleeast.tgz ${dir}mount/update_MMAP_middleeast.tgz;;
+    4) rsync -h --progress ${dir}map/update_MMAP_southamerica.tgz ${dir}mount/update_MMAP_southamerica.tgz;;
+    5) rsync -h --progress ${dir}map/update_MMAP_asia.tgz ${dir}mount/update_MMAP_asia.tgz;;
+    6) rsync -h --progress ${dir}map/update_MMAP_world.tgz ${dir}mount/update_MMAP_world.tgz;;
+  esac
+  echo " "
+  echo "Finalizing.... Please do not remove USB flash disk."
+  echo $unmount >/dev/tcp/localhost/5349
+  junk=$(nc -l 127.0.0.1 -p 5350)          
+  echo "USB flash disk may now be removed"
+  echo -n "Press any key to continue."
+  read junk
 }
 
 #sendconfig - Use MUTT to email configuration files to EMTEQ
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXX deprecated Replace w/ new option
 function sendconfig {
   cnt=1
   header
@@ -221,9 +237,9 @@ function sendconfig {
 
 #sshpass alias, saves a little typing. Passes command to host while hiding output from user
 function sshb() { 
-echo -e " ${black} " #Hide ssh ouput from user. 
-sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "$1" >/dev/null 
-echo -e " ${white} " #return console text to white
+#echo -e " ${black} " #Hide ssh ouput from user. 
+sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "$1" &>/dev/null 
+#echo -e " ${white} " #return console text to white
 }
 
 #sshpass alias. Pases command to host, makes output available to user
@@ -231,167 +247,170 @@ function sshbr() {
 sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "$1" 
 }
 
-#sshpass aliad=s. Invokes scp
+#sshpass alias. Invokes scp
 function sshc() { sshpass -f /home/emteq/.id scp "$1" ; }
 
 #Function to check econn state
 function isup() {
-  echo -e " ${black} "
   up=no
   while [[ $up != "22/tcp open  ssh" ]]; do
-    up=$(nmap $econip -PN -p ssh | grep open)
-  sleep 10
+    up=$(nmap $econip -PN -p ssh 2>/dev/null | grep open)
+  sleep 5
   done
-  #sleep 10
-  up=""
-  while [[ $up = "" ]]; do
-    up=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
-  sleep 10
-  done
-  echo $up
-  echo -e " ${white} "
+#  up=""
+#  while [[ $up = "" ]]; do
+#    up=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
+#  sleep 5 
+#  done
+#  echo $up
+#  echo -e " ${white} "
 }
 
 #Modify software parameters
 function syscon {
 header
 echo "Current Settings:"
-echo -e  "1. eConnect IP: "${blue}$econip${white}
-echo -e "2. Base GUI File: "${blue}$c2${white} 
-echo -e "3. eConapp Version: "${blue}$econapp${white}
-echo -e "4. Base Image File: "${blue}$iso${white}
-echo -e "5. encoder board software: "${blue}$encoder${white}
-echo -e "6. Database Files:"
-echo -e "	CWR450-2000: "${blue}${dbfiles[1]}${white}
-echo -e "	CWR450-5000: "${blue}${dbfiles[2]}${white}
-echo -e "7. Update System with EMTEQ package: "
-echo " "
+echo -e "1. eConnect IP: "${blue}$econip${white}
+echo -e "2. CWR450 GUI File: "${blue}$c2_450${white} 
+echo -e "3. CWR451 GUI File: "${blue}$c2_451${white}
+echo -e "4. CWR450 Image File: "${blue}$iso_450${white}
+echo -e "5. CWR451 Image File: "${blue}$iso_451${white}
+echo -e "6. CWR450-2000-XX DB: "${blue}$450_2000_db${white}
+echo -e "7. CWR450-5000-XX DB: "${blue}$450_5000_db${white}
+echo -e "8. CWR451-2000-XX DB: "${blue}$450_2000_db${white}
+echo -e "9. CWR451-5000-XX DB: "${blue}$450_5000_db${white}
+echo -e "10. encoder board software: "${blue}$encoder${white}
+echo -e "11. Update System with EMTEQ package: "
+echo ' '
 while : ; do
   echo -n "Please enter item to modify or (x) to exit: "
   read junk
   case $junk in
     1) echo " "
-       echo -n "Enter new IP address: "
-       read econip
-       echo $econip >/home/emteq/.econip
-       break;;
-    2) echo " "
-       cnt=1
-       for file in $( ls $dir"GUI/" ) ; do
-         echo $cnt "." $file
-         files[$cnt]=$file
-         cnt=$((cnt + 1))      
-       done
-       echo " "
-       echo -n "Select GUI file: "
-       read gfile
-       c2=${files[$gfile]}
-       echo $c2 >/home/emteq/.c2
-       break;;
-     
-     3) echo " "
-	    cnt=1
-	    for file in $( ls ${dir}econapp/ ) ; do
-		    echo $cnt "." $file
-		    files[$cnt]=$file
-		    cnt=$((cnt + 1))
-	    done
-	    echo " "
-	    echo -n "Select eConnApp File: "
-	    read efile
-	    econapp=${files[$efile]}
-	    echo $econapp >/home/emteq/.econapp
-	    break;;
-
-      4) echo " "
-       cnt=1
-       for file in $( ls ${dir}iso/ ) ; do
-         if [[ $file != 'econnect-firmware.img' ]] && [[ $file != 'firmware' ]]; then
-           echo $cnt "." $file
-           files[$cnt]=$file
-           cnt=$((cnt + 1))
+      echo -n "Enter new IP address: "
+      read econip
+      cfg_update econip $econip
+      break;;
+    [2-3]) echo " "
+      cnt=1
+      for file in $( ls $dir"GUI/" ) ; do
+        echo $cnt "." $file
+        files[$cnt]=$file
+        cnt=$((cnt + 1))      
+      done
+        echo " "
+        echo -n "Select GUI file: "
+        read gfile
+        c2=${files[$gfile]}
+        if [[  $junk = 2 ]]; then
+          cfg_update c2_450 $c2
+        else
+          cfg_update c2_451 $c2
+        fi
+        break;;
+    [4-5]) echo " "
+      cnt=1
+      for file in $( ls ${dir}iso/ ) ; do
+        if [[ $file != 'econnect-firmware.img' ]] && [[ $file != 'firmware' ]]; then
+          echo $cnt "." $file
+          files[$cnt]=$file
+          cnt=$((cnt + 1))
          fi      
-       done
-       echo " "
-       echo -n "Select Image file: "
-       read ifile
-       iso=${files[$ifile]}
-       fstab=${iso:14:1}
-       if [[ $fstab = 'F' ]]; then
-	       sudo /root/scripts/ftab F
-       else
-	       sudo /root/scripts/ftab
-       fi
-       echo $iso >/home/emteq/.iso
-       echo "Updating image file..."
-       rsync --progress ${dir}iso/${iso} ${dir}iso/econnect-firmware.img
-       break;;
-    
-    5) echo ""
-       cnt=1
-       for file in $( ls ${dir}encoder/ ) ; do
-	       echo $cnt". "$file
-	       files[$cnt]=$file
-	       cnt=$((cnt + 1))
-       done
-       echo " "
-       echo -n "Select file: "
-       read ifile
-       encoder=${files[$ifile]}
-       echo $encoder > /home/emteq/.encoder
-       break;;
-    6) echo "Warning - Selecting the wrong file will cause configurations to fail!"
-       echo " "
-       cnt=1
-       for file in $( ls $dbdir ) ; do
-         echo $cnt "." $file
-         files[$cnt]=$file
-         cnt=$((cnt + 1))
-       done
-       echo " "
-       echo -n "Select DB for CWR450-2000: "
-       read sel
-       dbfiles[1]=${files[$sel]}
-       echo ${dbfiles[1]} >/home/emteq/.dbfiles
-       echo -n "Select DB for CWR450-5000: "
-       read sel
-       echo ${files[$sel]} >>/home/emteq/.dbfiles
-       dbfiles[2]=${files[$sel]}
-       break;;
-    7) header
-       echo "Please insert USB key with update file(s)"
-       echo -n "Press any key to continue"
-       read junk
-       header
-       usbkeysel
-       if [ $usbselect = "x" ] ; then
-         break
-       fi
-       echo " "
-       count=1
-       for i in $( ls /run/media/emteq/${usbkey[$usbselect]}/*.tgz ) ; do
-         echo $count"." ${i##*/}
-         updatefiles[$count]=$i      
-         count=$(($count+1))    
-       done
-       echo -n "Select update package: "
-       
-       while : ; do
-         read updatefile
-         case $updatefile in    
-           [0-9]|[0-9][0-9])
-             if [ $updatefile -lt $count ] ; then
-               rm -rf /home/emteq/.resources/db/*
-               rm -rf /home/emteq/.resources/GUI/*
-               tar -C /home/ -xpzf ${updatefiles[$updatefile]}
-               break
-             else
-               echo "Entry Not Valid"
-               echo -n "Select update package: "
-             fi;;
-            *) echo "Entry Not Valid"
-               echo -n "Select update package: ";;
-          esac
+      done
+      echo " "
+      echo -n "Select Image file: "
+      read ifile
+      iso=${files[$ifile]}
+      fstab=${iso:14:1}
+      ##########AN FTAB NEEDS TO BE CREATED FOR 451##############
+      if [[ $fstab = 'F' ]]; then
+        sudo /root/scripts/ftab F
+          else
+        sudo /root/scripts/ftab
+      fi
+      if [[ $junk = 4 ]]; then
+        echo cfg_update $iso_450
+      else
+        echo cfg_update $iso_451
+      fi
+      echo "Updating image file..."
+      rsync --progress ${dir}iso/${iso} ${dir}iso/econnect-firmware.img
+      break;;
+    #############################################################
+    [6-9]) echo "Warning - Selecting the wrong file will cause configurations to fail!"
+      echo " "
+      cnt=1
+      for file in $( ls $dbdir ) ; do
+        echo $cnt "." $file
+        files[$cnt]=$file
+        cnt=$((cnt + 1))
+      done
+      echo " "
+      case $junk in
+        6)echo -n "Select DB for CWR450-2000: "
+          dbfile=${files[$sel]};;
+        7)echo -n "Select DB for CWR450-5000: "
+          dbfile=${files[$sel]};;
+        8)echo -n "Select DB for CWR451-2000: "
+          dbfile=${files[$sel]};;
+        9)echo -n "Select DB for CWR451-5000: "
+          dbfile=${files[$sel]};;
+      esac
+      read sel
+      dbfiles=${files[$sel]}
+      case $junk in
+        6) cfg_update 450_2000_db ${files[$sel]};;
+        7) cfg_update 450_5000_db ${files[$sel]};;
+        8) cfg_update 451_2000_db ${files[$sel]};;
+        9) cfg_update 451_5000_db ${files[$sel]};;
+      esac
+      break;;
+    10) echo ""
+      cnt=1
+      for file in $( ls ${dir}encoder/ ) ; do
+        echo $cnt". "$file
+	      files[$cnt]=$file
+	      cnt=$((cnt + 1))
+      done
+      echo " "
+      echo -n "Select file: "
+      read ifile
+      encoder=${files[$ifile]}
+      echo encoder $encoder
+      break;;   
+    11) header
+      echo "Please insert USB key with update file(s)"
+      echo -n "Press any key to continue"
+      read junk
+      header
+      usbkeysel
+      if [ $usbselect = "x" ] ; then
+        break
+      fi
+      echo " "
+      count=1
+      for i in $( ls /run/media/emteq/${usbkey[$usbselect]}/*.tgz ) ; do
+        echo $count"." ${i##*/}
+        updatefiles[$count]=$i      
+        count=$(($count+1))    
+      done
+      echo -n "Select update package: "
+      while : ; do
+        read updatefile
+        case $updatefile in    
+          [0-9]|[0-9][0-9])
+            if [ $updatefile -lt $count ] ; then
+              rm -rf /home/emteq/.resources/db/*
+              rm -rf /home/emteq/.resources/GUI/*
+              tar -C /home/ -xpzf ${updatefiles[$updatefile]}
+              break
+            else
+              echo "Entry Not Valid"
+              echo -n "Select update package: "
+            fi;;
+          *) echo "Entry Not Valid"
+            echo -n "Select update package: ";;
+        esac
       done
      echo ""
      echo "Update Complete... System will now restart."
@@ -406,7 +425,7 @@ done
 
 
 function sql () {
-echo $1 | mysql -uroot -proot
+  echo $1 | mysql -uroot -proot
 }
 
 #Commit User selected FMS parameters to local DB
@@ -418,10 +437,10 @@ cnt=1
 sql "DROP DATABASE IF EXISTS econnect;"
 sql "CREATE DATABASE econnect;"
 case $type in
-  1)  mysql -uroot -proot -Deconnect < $dbdir${dbfiles[1]};;
-  2)  mysql -uroot -proot -Deconnect < $dbdir${dbfiles[2]};;
-  3)  mysql -uroot -proot -Deconnect < $dbdir${dbfiles[1]};;
-  4)  mysql -uroot -proot -Deconnect < $dbdir${dbfiles[2]};;
+  [1,3])  mysql -uroot -proot -Deconnect < $dbdir$450_2000_db;;
+  [2,4])  mysql -uroot -proot -Deconnect < $dbdir$450_5000_db;;
+  [5,7])  mysql -uroot -proot -Deconnect < $dbdir$451_2000_db;;
+  [6,8])  mysql -uroot -proot -Deconnect < $dbdir$451_5000_db;;
 esac
 #Generate Update Script
 echo "-- FMS Data" > $dbstatic"update.sql"
@@ -441,8 +460,6 @@ for i in {1..9}; do
     12) echo "UPDATE econnect.web_userwidgets SET visible=1, ordinal=$i WHERE UserWidgetID=313;" >> $dbstatic"update.sql";;
     13) echo "UPDATE econnect.web_userwidgets SET visible=1, ordinal=$i WHERE UserWidgetID=315;" >> $dbstatic"update.sql";;
     14) echo "UPDATE econnect.web_userwidgets SET visible=1, ordinal=$i WHERE UserWidgetID=316;" >> $dbstatic"update.sql";;
-#    15) echo "UPDATE econnect.web_userwidgets SET visible=1, ordinal=$i WHERE UserWidgetID=316;" >> $dbstatic"update.sql";;
-#    16) echo "UPDATE econnect.web_userwidgets SET visible=1, ordinal=$i WHERE UserWidgetID=316;" >> $dbstatic"update.sql";;
   esac
 done
 if [ $sip = 'y' ] ; then
@@ -462,15 +479,17 @@ sed -i '1 i\CREATE DATABASE IF NOT EXISTS econnect;' ${dbstatic}update_DB_factor
 echo " " >> $confdir$lot
 echo "------DATABASE------" >> $confdir$lot
 cat $dbstatic'update_DB_factory.sql' >> $confdir$lot
+#Pull the rug our from local DB
 sql "DROP DATABASE IF EXISTS econnect;"
 }
 
 
 function config {
-#initialize main loop. The user will break to here should they want to restart
+#Collects config params
+#The user will break to here should they want to restart
 while [ $res -eq 1 ] || [ $res -eq 2 ];  do
-#initialize a few variables, these all require a reset if the user restarts the script. 
-  unset type=
+#Clean up, these all require a reset if the user restarts the script. 
+  unset type
   unset sip
   unset tail
   unset map
@@ -490,6 +509,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   lang3=""
   lang=""
   break_loop=0
+  platform=0
   
 #System Configure
   header
@@ -499,40 +519,58 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   echo  "2. CWR450-5000-01 XM eConnect System Low Capacity Drive" 
   echo  "3. CWR450-2000-02 Base eConnect System High Capacity Drive"
   echo  "4. CWR450-5000-02 XM eConnect System High Capacity Drive" 
+  echo  "5. CWR451-2000-01 2nd Gen System Low Capacity Drive "
+  echo  "6. CWR451-5000-01 2nd Gen XM System Low Capacity Drive" 
+  echo  "7. CWR451-2000-02 2nd Gen System High Capacity Drive"
+  echo  "8. CWR451-5000-02 2nd Gen XM System High Capacity Drive" 
   echo " "
 
   while : ; do
     echo -n "Enter Selection: " 
     read type
     case $type in 
-      [1-4]) echo -n "Enter Lot Number: "
-             while : ;do
-	       read lot
-	       if [[ $lot = "" ]] ; then
-	         echo -n "Invalid Selection, Enter Lot Number:"
-	       else
-                 break
-	       fi
-             done
-	     echo -n "Enter Aircraft Tail ID: "
-             read tail
-             echo -n "Will AVOIP be enabled, (y)es (n)o: " #***Need to determine how to set RUNMODE 5***
-             read sip
-             while : ; do
-               case $sip in
-                 y) break;;
-                 n) break;;
-                 *) echo -n "Invalid Entry: "
-                    read sip;;
-               esac
-             done
-             break;;
+      [1-8]) 
+        echo "Select Platform"
+        echo '1. PC12'
+        echo '2. PC24'
+        echo ''
+        while : ; do
+          echo -n 'Enter Selection: '
+          read platform
+          case $platform in
+            [1-2]) header
+            break;;
+            *) echo 'Invalid Selection';;
+          esac
+        done
+        echo -n "Enter Lot Number: "
+        while : ;do
+          read lot
+	        if [[ $lot = "" ]] ; then
+	          echo -n "Invalid Selection, Enter Lot Number:"
+	        else
+            break
+	        fi
+        done
+      echo -n "Enter Aircraft Tail ID: "
+      read tail
+      echo -n "Will AVOIP be enabled, (y)es (n)o: " #***Need to determine how to set RUNMODE 5***
+      read sip
+      while : ; do
+        case $sip in
+          y) break;;
+          n) break;;
+          *) echo -n "Invalid Entry: "
+             read sip;;
+        esac
+      done
+      break;;
       *) echo "Not a valid selection: $type";;
     esac
   done
 
   #Begin Map Selection, Skip if generating firmware flash disk
-  if [ $res -eq 1 ]; then  
+  if [[ $res = 1 ]]; then  
     header
     echo "Select map"
     echo " "
@@ -542,19 +580,22 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo "4. South America"
     echo "5. Australia / Asia"
   #if high capacity drive, offer world map.
-    if [ "$type" -gt 2 ]; then 
-      echo "6. World Map"
-    fi
+    case $type in  
+      [3,4,7,8]) echo "6. World Map";;
+    esac
     echo " "
     while : ; do
       echo -n "Enter Selection or (x) to Restart: " 
       read map
       case $map in 
-        [1-6]) if [ "$type" -lt 2 ] && [ "$map" = 6 ] ; then
-                 echo "Not a valid selection: $map"
-               else
-                 break
-               fi;;
+        [1-6]) case $type in
+          [1,2,5,6]) 
+            if [ "$map" = 6 ] ; then
+              echo "Not a valid selection: $map"
+            else
+              break
+            fi;;
+          esac
         x) break;;
         *) echo "Not a valid selection: $map";;
       esac
@@ -565,7 +606,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     fi
     header
     echo " "
-    echo "The map may be copied directly using TCP/IP (recommended)"
+    echo "The map may be copied directly using TCP/IP"
     echo "or a USB flash disk may be generated for later installation."
     echo "If a USB flash disk has been previously generated and will be used"
     echo "to install the map, this step may be skipped."
@@ -592,57 +633,88 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   fi
       
 #Begin Language Selection
+#Note - This section got a little fubar while trying to add support for
+#PC24 langugage systems. 'platform' dictates language system to use.
   header
   if [ $break_loop = "x" ] ; then 
     break
   fi
-  echo "Select Language and Flag. Up to 3 selections allowed."
-  echo " "
-  echo "Selection	Language		Map"
-  echo " "
-  echo "1.		English			USA"
-  echo "2.		English			UK"
-  echo "3.		English			Canada"
-  echo "4.		Spanish			Spain"
-  echo "5.		Spanish			Mexico"
-  echo "6.		Portuguese		Portugal"
-  echo "7.		Portuguese		Brazil"
-  echo "8.		Russian			Russia"
-  echo "9.		German			Germany"
-  echo "10.		German			Switzerland"
-  echo "11.		French			France"
-  echo "12.		Chinese (Standard)	China"
-  echo "13.		Ukrainian	Ukraine"
-  echo " "
-
+  if [[ $platrorm = 1 ]] ; then
+    echo "Select Language and Flag. Up to 3 selections allowed."
+    echo " "
+    echo "Selection	Language		Map"
+    echo " "
+    echo "1.		English			USA"
+    echo "2.		English			UK"
+    echo "3.		English			Canada"
+    echo "4.		Spanish			Spain"
+    echo "5.		Spanish			Mexico"
+    echo "6.		Portuguese		Portugal"
+    echo "7.		Portuguese		Brazil"
+    echo "8.		Russian			Russia"
+    echo "9.		German			Germany"
+    echo "10.		German			Switzerland"
+    echo "11.		French			France"
+    echo "12.		Chinese (Standard)	China"
+    echo "13.		Ukrainian	Ukraine"
+    echo " "
+    lang_end=4
+  else
+    echo "Select Language and Flag. Up to 3 selections allowed."
+    echo " "
+    echo "Selection	Language		Map"
+    echo " "
+    echo "1.		English"
+    echo "2.		Spanish"
+    echo "3.		Portuguese"
+    echo "4.		Russian"
+    echo "5.		German"
+    echo "6.		French"
+    echo "7.		Chinese (Standard)"
+    echo "9.		Ukrainian"
+    echo " "
+    lang_end=9
+  fi
   i=1
-  until [ $i = 4 ]; do
+  until [ $i = $lang_end ]; do
     echo -n "Enter Selection" $i "(c) To Complete Selection(s) Or (x) to Restart: " 
     read languages[$i]
-    case ${languages[$i]} in
-      [1-9]|[1][0-6]) 
-        if [ "$i" -ge "2" ] ; then
-          if [[ ${languages[1]} = ${languages[2]} ]] || [[ ${languages[2]} = ${languages[3]} ]] || [[ ${languages[1]} = ${languages[3]} ]] ; then
-            echo "Language" ${language[$i]} "already selected."
-            i=$(($i - 1))
-          fi
+    if [[ $platform = 1 ]]; then
+      case ${languages[$i]} in
+        [1-9]|[1][0-6]) 
+        if [[ $( echo ${languages[@] | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then #compares uniq to total index
+          echo "Language" ${language[$i]} "already selected."
+          i=$(($i - 1))
         fi;;
-       c) case $i in 
-         1) echo "At least 1 language must be selected."
-           i=$(($i - 1));;
-         2) languages[3]=${languages[2]}
-           i=4
+      esac
+    else
+      case ${languages[$i]} in
+        [1-9])
+        if [[ $( echo ${languages[@] | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then
+          echo "Language" ${language[$i]} "already selected."
+          i=$(($i - 1))
+        fi;;
+        [1][0-6]) echo "Invalid Selection"
+          i=$(($i - 1));;
+      esac
+    fi
+      case ${languages[$i]} in 
+        [1-9]|[1][0-6]) ;; #defines filter for *
+        c) case $i in # I <3 nested cases, so readable.
+          1) echo "At least 1 language must be selected."
+            i=$(($i - 1));; #I could have probably just set i = 1 
+          *) for void in {$i..$lang_end}; do
+            languages[$void]='void'
+            i=$lang_end
            break;; 
-         3) i=4
-           break;;
-           esac;;
-         x) lang="x"
-            break_loop=1
-            break;;
-         *) echo "Invalid Selection"
-            i=$(($i - 1));;
-    esac    
-  i=$(($i+1))
+           esac
+        x) lang="x"
+          break_loop=1
+          break;;
+        *) echo "Invalid Selection"
+          i=$(($i - 1));;
+      esac    
+    i=$(($i+1))
   done  
   if [ $lang = "x" ]; then
     break_loop=1
