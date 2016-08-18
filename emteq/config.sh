@@ -742,13 +742,13 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo -ne "Enter Selection" $count "of 9 Or (c) To Complete Selection(s) Or (x) To Restart: "
     read field1[$count]       
     case ${field1[$count]} in
-      [1-9]|[1][0-6]) count=$((count + 1));;
+      [1-9]|[1][0-4]) count=$((count + 1));;
       x) break_loop=1
          field='x'
          count=10
          break;;
       c) until [ $count = 10 ] ; do
-            field1[$count]=17
+            field1[$count]=17 #17 indicates void
             count=$((count + 1))
           done
           break;;
@@ -767,17 +767,26 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     2) echo "Model: CWR450-5000-01" | tee $confdir$lot;;
     3) echo "Model: CWR450-2000-02" | tee $confdir$lot;;
     4) echo "Model: CWR450-5000-02" | tee $confdir$lot;;
+    5) echo "Model: CWR451-2000-01" | tee $confdir$lot;;
+    6) echo "Model: CWR451-5000-01" | tee $confdir$lot;;
+    7) echo "Model: CWR451-2000-02" | tee $confdir$lot;;
+    8) echo "Model: CWR451-5000-02" | tee $confdir$lot;;
   esac
+  if (( $platform = 1 )); then
+	echo "Platform: PC12" | tee $confdir$lot
+  else
+	echo "Platform: PC24" | tee $confdir$lot
+  fi
   echo "Lot:" $lot | tee -a $confdir$lot
   echo "Aircraft ID:" $tail | tee -a $confdir$lot
   echo "GUI Revision:" $c2 | tee -a $confdir$lot
   echo "Firmware:" $iso | tee -a $confdir$lot 
 
   case "$type" in
-    1) echo "Base Database: " ${dbfiles[1]} | tee -a $confdir$lot;;
-    2) echo "Base Database: " ${dbfiles[2]} | tee -a $confdir$lot;;
-    3) echo "Base Database: " ${dbfiles[1]} | tee -a $confdir$lot;;
-    4) echo "Base Database: " ${dbfiles[2]} | tee -a $confdir$lot;;
+    [1,3]) echo "Base Database: " $CWR450_2000_db | tee -a $confdir$lot;;
+    [2,4]) echo "Base Database: " $CWR450_5000_db | tee -a $confdir$lot;;
+    [5,7]) echo "Base Database: " $CWR451_2000_db | tee -a $confdir$lot;;
+    [6,8]) echo "Base Database: " $CWR451_2000_db | tee -a $confdir$lot;;
   esac
   echo $(date) | tee -a $confdir$lot
   case "$sip" in
@@ -855,7 +864,6 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
       *) break;;
     esac
   done
-#  done
 #if user had entered x, this will restart the script
   if [ $break_loop -eq 1 ]; then
     res=$res 
