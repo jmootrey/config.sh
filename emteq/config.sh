@@ -684,13 +684,19 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
       echo -n "Enter Selection or (x) to Restart: " 
       read map
       case $map in 
-        [1-6]) case $type in
-          [1,2,5,6]) if [ "$map" = 6 ] ; then
-              echo "Not a valid selection: $map"
-          else
-              break
-            fi
-          esac;;
+        [1-6]) 
+          case $type in
+            [1,2,5,6]) 
+              if [ "$map" = 6 ] ; then
+                echo "Not a valid selection: $map"
+              else
+                break
+              fi
+            ;;
+            *) break
+            ;;
+          esac
+          ;;
         x) break;;
         *) echo "Not a valid selection: $map";;
       esac
@@ -734,7 +740,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   if [ $break_loop = "x" ] ; then 
     break
   fi
-  if [[ $platrorm = 1 ]] ; then
+  if [[ $platform = 1 ]] ; then
     echo "Select Language and Flag. Up to 3 selections allowed."
     echo " "
     echo "Selection	Language		Map"
@@ -768,25 +774,25 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo "7.		Chinese (Standard)"
     echo "8.		Ukrainian"
     echo " "
-    lang_end=8
+    lang_end=9
   fi
   i=1
   until [ $i = $lang_end ]; do
     echo -n "Enter Selection" $i "(c) To Complete Selection(s) Or (x) to Restart: " 
-    read languages[$i]
+    read languages[$i] 
     if [[ $platform = 1 ]]; then
       case ${languages[$i]} in
         [1-9]|[1][0-6]) 
-          if [[ $( echo ${languages[@]} | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then #compares uniq to total index
-          echo "Language" ${language[$i]} "already selected."
-          i=$(($i - 1))
+          if [[ $( echo ${languages[@]} | tr ' ' '\n' | uniq | wc -l) != ${#languages[@]} ]]; then #compares uniq to total index
+            echo "Language" ${language[$i]} "already selected."
+            i=$(($i - 1))
           fi
         ;;
       esac
     else
       case ${languages[$i]} in
         [1-9])
-          if [[ $( echo ${languages[@]} | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then
+          if [[ $( echo ${languages[@]} | tr ' ' '\n' | uniq | wc -l) != ${#languages[@]} ]]; then
             echo "Language" ${language[$i]} "already selected."
             i=$(($i - 1))
           fi
@@ -798,14 +804,14 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
       esac
     fi
       case ${languages[$i]}:$i in 
-        [1-9]|[1][0-6]:*) #nothing to do here
+        [1-9]:*|[1][0-6]:*) #'nothing to do here' #debug
         ;; 
         c:1)   
           echo "At least 1 language must be selected."
           i=$(($i - 1))
         ;; 
         c:*) 
-          for void in {$i..$lang_end}; do
+          for void in $(seq $i $lang_end); do #{..} doesnt like var Seq does!
             languages[$void]='void'
             i=$lang_end
           done
@@ -889,10 +895,23 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     7) echo "Model: CWR451-2000-02" | tee $confdir$lot;;
     8) echo "Model: CWR451-5000-02" | tee $confdir$lot;;
   esac
-  if (( $platform = 1 )); then
-	echo "Platform: PC12" | tee $confdir$lot
+  if [[ $platform = 1 ]]; then
+    echo "Platform: PC12" | tee $confdir$lot
   else
-	echo "Platform: PC24" | tee $confdir$lot
+    echo "Platform: PC24" | tee $confdir$lot
+    echo "Lighting Packages Selected:" | tee $confdir$lot
+    for bool in 1:$op1_bool 2:$op2_bool 3:$op3_bool 4:$op4_bool; do
+      case $bool in
+        1:0) echo -e '\t Cabin Downwash \t\Disabled' | tee $confdir$lot;;
+        1:1) echo -e '\t Cabin Downwash \t Enabled' | tee $confdir$lot;;
+        2:0) echo -e '\t Cabin Spotlight \t Disabled' | tee $confdir$lot;;
+        2:1) echo -e '\t Cabin Spotlight \t Enabled' | tee $confdir$lot;;
+        3:0) echo -e '\t Window Accent \t\t Disabled' | tee $confdir$lot;;
+        3:1) echo -e '\t Window Accent \t\t Enabled' | tee $confdir$lot;;
+        4:0) echo -e '\t Table Downwash \t Disabled' | tee $confdir$lot;;
+        4:1) echo -e '\t Table Downwash \t Enabled' | tee $confdir$lot;;
+      esac
+    done
   fi
   echo "Lot:" $lot | tee -a $confdir$lot
   echo "Aircraft ID:" $tail | tee -a $confdir$lot
@@ -912,7 +931,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   esac
   echo " "
   echo "Map Selection:"
-  if (( $res = 1 )); then
+  if [[ $res = 1 ]]; then
     case $map in
       1) echo "Map: North America" | tee -a $confdir$lot;;
       2) echo "Map: Europe" | tee -a $confdir$lot;;
