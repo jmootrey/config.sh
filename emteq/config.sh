@@ -482,7 +482,7 @@ if [[ $platform = 2 ]]; then
     #Remove phantom nano driver
     echo 'DELETE FROM econnect.lighting_io_installed WHERE lru_id=3;'
   fi
-if
+fi
 #Commit script to local DB
 mysql -uroot -proot -Deconnect < $dbstatic"update.sql"
 rm $dbstatic"update.sql"
