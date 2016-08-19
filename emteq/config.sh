@@ -1,13 +1,13 @@
 #!/bin/bash
 #eConnect Configuration Tool
-#This script is intended to configure eConnect systems 
-#and is written specifically for the PC12 platform. 
+#This script is intended to configure eConnect systems CWR450/451
+#and is written specifically for the PC12/PC24 platform. 
 
 #Dependencies
-#sshpass
-#ssh
+#sshpass  
+#openssh
 #mysql client
-
+#GNU Coreutils
 
 #Changelog
 #2.1.0 
@@ -275,12 +275,14 @@ echo -e "2. CWR450 GUI File: "${blue}$c2_450${white}
 echo -e "3. CWR451 GUI File: "${blue}$c2_451${white}
 echo -e "4. CWR450 Image File: "${blue}$iso_450${white}
 echo -e "5. CWR451 Image File: "${blue}$iso_451${white}
-echo -e "6. CWR450-2000-XX DB: "${blue}$450_2000_db${white}
-echo -e "7. CWR450-5000-XX DB: "${blue}$450_5000_db${white}
-echo -e "8. CWR451-2000-XX DB: "${blue}$450_2000_db${white}
-echo -e "9. CWR451-5000-XX DB: "${blue}$450_5000_db${white}
-echo -e "10. encoder board software: "${blue}$encoder${white}
-echo -e "11. Update System with EMTEQ package: "
+echo -e "6. CWR450-2000-XX DB: "${blue}$db_450_2000${white}
+echo -e "7. CWR450-5000-XX DB: "${blue}$db_450_5000${white}
+echo -e "8. CWR451-2000-XX DB: "${blue}$db_450_2000${white}
+echo -e "9. CWR451-5000-XX DB: "${blue}$db_450_5000${white}
+echo -e "10. CWR450 Script: "${blue}$scene_450${white}
+echo -e "11. CWR451 Script: "${blue}$scene_451${white}
+echo -e "12. encoder board software: "${blue}$encoder${white}
+echo -e "13. Update System with EMTEQ package: "
 echo ' '
 while : ; do
   echo -n "Please enter item to modify or (x) to exit: "
@@ -359,10 +361,10 @@ while : ; do
       read sel
       dbfiles=${files[$sel]}
       case $junk in
-        6) cfg_update 450_2000_db ${files[$sel]};;
-        7) cfg_update 450_5000_db ${files[$sel]};;
-        8) cfg_update 451_2000_db ${files[$sel]};;
-        9) cfg_update 451_5000_db ${files[$sel]};;
+        6) cfg_update db_450_2000 ${files[$sel]};;
+        7) cfg_update db_450_5000 ${files[$sel]};;
+        8) cfg_update db_451_2000 ${files[$sel]};;
+        9) cfg_update db_451_5000 ${files[$sel]};;
       esac
       break;;
     10) echo ""
@@ -428,19 +430,19 @@ function sql () {
   echo $1 | mysql -uroot -proot
 }
 
-#Commit User selected FMS parameters to local DB
+#Commit User selected FMS/Lightig parameters to local DB
 #Dumps local DB to file for import to remote system
-function fms_config () {
+function db_config () {
 count=301
 cnt=1
 #Host working database
 sql "DROP DATABASE IF EXISTS econnect;"
 sql "CREATE DATABASE econnect;"
 case $type in
-  [1,3])  mysql -uroot -proot -Deconnect < $dbdir$450_2000_db;;
-  [2,4])  mysql -uroot -proot -Deconnect < $dbdir$450_5000_db;;
-  [5,7])  mysql -uroot -proot -Deconnect < $dbdir$451_2000_db;;
-  [6,8])  mysql -uroot -proot -Deconnect < $dbdir$451_5000_db;;
+  [1,3])  mysql -uroot -proot -Deconnect < $dbdir$db_450_2000;;
+  [2,4])  mysql -uroot -proot -Deconnect < $dbdir$db_450_5000;;
+  [5,7])  mysql -uroot -proot -Deconnect < $dbdir$db_451_2000;;
+  [6,8])  mysql -uroot -proot -Deconnect < $dbdir$db_451_5000;;
 esac
 #Generate Update Script
 echo "-- FMS Data" > $dbstatic"update.sql"
@@ -466,6 +468,21 @@ if [ $sip = 'y' ] ; then
   echo "DELETE FROM econnect.econnect_config WHERE ecms_id=2;" >> $dbstatic"update.sql"
   echo "UPDATE econnect.econnect_config SET econnect_ip='10.0.9.1' WHERE ecms_id=1;" >> $dbstatic"update.sql"
 fi
+#Process lighting for PC24
+if [[ $platform = 2 ]]; then
+  for bool in 1:$op1_bool 2:$op2_bool 3:$op3_bool 4:$op4_bool; do
+    case $bool in
+      1:0) echo 'UPDATE econnect.web_userwidgets SET visible=0 WHERE UserWidgetID=403;' >> $dbstatic"update.sql";;
+      2:0) echo 'UPDATE econnect.web_userwidgets SET visible=0 WHERE UserWidgetID=415;' >> $dbstatic"update.sql";;
+      3:0) echo 'UPDATE econnect.web_userwidgets SET visible=0 WHERE UserWidgetID=409;' >> $dbstatic"update.sql";;
+      4:0) echo 'UPDATE econnect.web_userwidgets SET visible=0 WHERE UserWidgetID=410;' >> $dbstatic"update.sql";;
+    esac
+  done
+  if [[ $op3_bool = 0 && op4_bool = 0 ]]; then 
+    #Remove phantom nano driver
+    echo 'DELETE FROM econnect.lighting_io_installed WHERE lru_id=3;'
+  fi
+if
 #Commit script to local DB
 mysql -uroot -proot -Deconnect < $dbstatic"update.sql"
 rm $dbstatic"update.sql"
@@ -568,7 +585,86 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
       *) echo "Not a valid selection: $type";;
     esac
   done
-
+  #Begin Lighting Configuration, Skip if PC12 
+  if [[ $platform = 2 ]]; then
+    op1_color='\e[97m'
+    op2_color='\e[97m'
+    op3_color='\e[97m'
+    op4_color='\e[97m'
+    op1_installed='Disabled'
+    op2_installed='Disabled'
+    op3_installed='Disabled'
+    op4_installed='Disabled'
+    op1_bool=0
+    op2_bool=0
+    op3_bool=0
+    op4_bool=0
+    while : ;do
+      header
+      echo "Select Lighting Configuration"
+      echo -e 'Standard Lighting Package:\t\t'${blue}'Enabled'${white}
+      echo''
+      echo -e '1. Cabin Downwash:\t\t\t'${op1_color}$op1_installed${white}
+      echo -e '2. Cabin Spotlights:\t\t\t'${op2_color}$op2_installed${white}
+      echo -e '3. Window Accent Lights:\t\t'${op3_color}$op3_installed${white}
+      echo -e '4. Table Downwash Lights:\t\t'${op4_color}$op4_installed${white}
+      echo ' '
+      echo -ne 'Enter Package Number to Enable or (c) to Confirm: '
+      read junk
+      case $junk in
+        1) 
+          if [[ $op1_bool = 0 ]]; then
+            op1_installed='Enabled'
+            op1_color='\e[0;94m'
+            op1_bool=1
+          else
+            op1_installed='Disabled'
+            op1_color='\e[97m'
+            op1_bool=0
+          fi
+        ;;
+        2)
+        if [[ $op2_bool = 0 ]]; then
+            op2_installed='Enabled'
+            op2_color='\e[0;94m'
+            op2_bool=1
+          else
+            op2_installed='Disabled'
+            op2_color='\e[97m'
+            op2_bool=0
+          fi
+        ;;
+        3)
+        if [[ $op3_bool = 0 ]]; then
+            op3_installed='Enabled'
+            op3_color='\e[0;94m'
+            op3_bool=1
+          else
+            op3_installed='Disabled'
+            op3_color='\e[97m'
+            op3_bool=0
+          fi
+        ;;
+        4)
+        if [[ $op4_bool = 0 ]]; then
+            op4_installed='Enabled'
+            op4_color='\e[0;94m'
+            op4_bool=1
+          else
+            op4_installed='Disabled'
+            op4_color='\e[97m'
+            op4_bool=0
+          fi
+        ;;
+        c) break
+        ;;
+        *) 
+          echo -ne '\n'${red}'Invalid Selection '${white}'Any Key To Continue'
+          read junk
+        ;;
+      esac
+    done
+  fi
   #Begin Map Selection, Skip if generating firmware flash disk
   if [[ $res = 1 ]]; then  
     header
@@ -589,13 +685,12 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
       read map
       case $map in 
         [1-6]) case $type in
-          [1,2,5,6]) 
-            if [ "$map" = 6 ] ; then
+          [1,2,5,6]) if [ "$map" = 6 ] ; then
               echo "Not a valid selection: $map"
-            else
+          else
               break
-            fi;;
-          esac
+            fi
+          esac;;
         x) break;;
         *) echo "Not a valid selection: $map";;
       esac
@@ -671,9 +766,9 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo "5.		German"
     echo "6.		French"
     echo "7.		Chinese (Standard)"
-    echo "9.		Ukrainian"
+    echo "8.		Ukrainian"
     echo " "
-    lang_end=9
+    lang_end=8
   fi
   i=1
   until [ $i = $lang_end ]; do
@@ -682,37 +777,49 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     if [[ $platform = 1 ]]; then
       case ${languages[$i]} in
         [1-9]|[1][0-6]) 
-        if [[ $( echo ${languages[@] | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then #compares uniq to total index
+          if [[ $( echo ${languages[@]} | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then #compares uniq to total index
           echo "Language" ${language[$i]} "already selected."
           i=$(($i - 1))
-        fi;;
+          fi
+        ;;
       esac
     else
       case ${languages[$i]} in
         [1-9])
-        if [[ $( echo ${languages[@] | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then
-          echo "Language" ${language[$i]} "already selected."
+          if [[ $( echo ${languages[@]} | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then
+            echo "Language" ${language[$i]} "already selected."
+            i=$(($i - 1))
+          fi
+        ;;
+        [1][0-6]) 
+          echo "Invalid Selection"
           i=$(($i - 1))
-        fi;;
-        [1][0-6]) echo "Invalid Selection"
-          i=$(($i - 1));;
+        ;;
       esac
     fi
-      case ${languages[$i]} in 
-        [1-9]|[1][0-6]) ;; #defines filter for *
-        c) case $i in # I <3 nested cases, so readable.
-          1) echo "At least 1 language must be selected."
-            i=$(($i - 1));; #I could have probably just set i = 1 
-          *) for void in {$i..$lang_end}; do
+      case ${languages[$i]}:$i in 
+        [1-9]|[1][0-6]:*) #nothing to do here
+        ;; 
+        c:1)   
+          echo "At least 1 language must be selected."
+          i=$(($i - 1))
+        ;; 
+        c:*) 
+          for void in {$i..$lang_end}; do
             languages[$void]='void'
             i=$lang_end
-           break;; 
-           esac
-        x) lang="x"
-          break_loop=1
-          break;;
-        *) echo "Invalid Selection"
-          i=$(($i - 1));;
+          done
+          break
+        ;; 
+        x:*) 
+         lang="x"
+         break_loop=1
+         break
+        ;;
+        *:*) 
+          echo "Invalid Selection"
+          i=$(($i - 1))
+        ;;
       esac    
     i=$(($i+1))
   done  
@@ -742,24 +849,34 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo -ne "Enter Selection" $count "of 9 Or (c) To Complete Selection(s) Or (x) To Restart: "
     read field1[$count]       
     case ${field1[$count]} in
-      [1-9]|[1][0-4]) count=$((count + 1));;
-      x) break_loop=1
-         field='x'
-         count=10
-         break;;
-      c) until [ $count = 10 ] ; do
-            field1[$count]=17 #17 indicates void
-            count=$((count + 1))
-          done
-          break;;
-      *) echo "Invalid Entry";;
+      [1-9]|[1][0-4]) 
+        count=$((count + 1))
+      ;;
+      x) 
+        break_loop=1
+        field='x'
+        count=10
+        break
+      ;;
+      c) 
+        until [ $count = 10 ] ; do
+          field1[$count]=17 #17 indicates void
+          count=$((count + 1))
+        done
+        break
+      ;;
+      *) 
+        echo "Invalid Entry"
+      ;;
     esac
   done  
 #break point if user initiates x in FMS data collection
   if [ "$field" == "x" ]; then
     break
   fi
-#Variables captured. Display and Save Load out
+###############################################
+#Variables captured. Display and Save Load out#
+###############################################
   header
   echo "System Load-out"
   case "$type" in
@@ -783,10 +900,10 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   echo "Firmware:" $iso | tee -a $confdir$lot 
 
   case "$type" in
-    [1,3]) echo "Base Database: " $CWR450_2000_db | tee -a $confdir$lot;;
-    [2,4]) echo "Base Database: " $CWR450_5000_db | tee -a $confdir$lot;;
-    [5,7]) echo "Base Database: " $CWR451_2000_db | tee -a $confdir$lot;;
-    [6,8]) echo "Base Database: " $CWR451_2000_db | tee -a $confdir$lot;;
+    [1,3]) echo "Base Database: " $db_450_2000 | tee -a $confdir$lot;;
+    [2,4]) echo "Base Database: " $db_450_5000 | tee -a $confdir$lot;;
+    [5,7]) echo "Base Database: " $db_451_2000 | tee -a $confdir$lot;;
+    [6,8]) echo "Base Database: " $db_451_2000 | tee -a $confdir$lot;;
   esac
   echo $(date) | tee -a $confdir$lot
   case "$sip" in
@@ -795,8 +912,8 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   esac
   echo " "
   echo "Map Selection:"
-  if [ $res -eq 1 ]; then
-    case "$map" in
+  if (( $res = 1 )); then
+    case $map in
       1) echo "Map: North America" | tee -a $confdir$lot;;
       2) echo "Map: Europe" | tee -a $confdir$lot;;
       3) echo "Map: Africa/Middle East" | tee -a $confdir$lot;;
@@ -811,21 +928,29 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   echo " "
   echo "Language Selection(s):"
   for i in ${languages[@]}; do
-    case $i in
-      1) echo "Language: English	Map: USA" | tee -a $confdir$lot;;
-      2) echo "Language: English	Map: UK" | tee -a $confdir$lot;;
-      3) echo "Language: English	Map: Canada" | tee -a $confdir$lot;;
-      4) echo "Language: Spanish	Map: Spain" | tee -a $confdir$lot;;
-      5) echo "Language: Spanish	Map: Mexico" | tee -a $confdir$lot;;
-      6) echo "Language: Portuguese Map: Portugal" | tee -a $confdir$lot;;
-      7) echo "Language: Portuguese	Map: Brazil" | tee -a $confdir$lot;;
-      8) echo "Language: Russian Map: Russia" | tee -a $confdir$lot;;
-      9) echo "Language: German	Map: Germany" | tee -a $confdir$lot;;
-      10) echo "Language: German	Map: Switzerland" | tee -a $confdir$lot;;
-      11) echo "Language: French	Map: France" | tee -a $confdir$lot;;
-      12) echo "Language: Chinese       Map: China" | tee -a $confdir$lot;;
-      13) echo "Language: Ukrainian	Map: Ukraine" | tee -a $confdir$lot;;
-      c) echo "Selection Voided" | tee -a $confdir$lot;;
+    case $i:$platform in
+      1:1) echo "Language: English	Map: USA" | tee -a $confdir$lot;;
+      2:1) echo "Language: English	Map: UK" | tee -a $confdir$lot;;
+      3:1) echo "Language: English	Map: Canada" | tee -a $confdir$lot;;
+      4:1) echo "Language: Spanish	Map: Spain" | tee -a $confdir$lot;;
+      5:1) echo "Language: Spanish	Map: Mexico" | tee -a $confdir$lot;;
+      6:1) echo "Language: Portuguese Map: Portugal" | tee -a $confdir$lot;;
+      7:1) echo "Language: Portuguese	Map: Brazil" | tee -a $confdir$lot;;
+      8:1) echo "Language: Russian Map: Russia" | tee -a $confdir$lot;;
+      9:1) echo "Language: German	Map: Germany" | tee -a $confdir$lot;;
+      10:1) echo "Language: German	Map: Switzerland" | tee -a $confdir$lot;;
+      11:1) echo "Language: French	Map: France" | tee -a $confdir$lot;;
+      12:1) echo "Language: Chinese       Map: China" | tee -a $confdir$lot;;
+      13:1) echo "Language: Ukrainian	Map: Ukraine" | tee -a $confdir$lot;;
+      1:2) echo "Language: English" | tee -a $confdir$lot;;
+      2:2) echo "Language: Spanish" | tee -a $confdir$lot;;
+      3:2) echo "Language: Portugese" | tee -a $confdir$lot;;
+      4:2) echo "Language: Russian" | tee -a $confdir$lot;;
+      5:2) echo "Language: German" | tee -a $confdir$lot;;
+      6:2) echo "Language: French" | tee -a $confdir$lot;;
+      7:2) echo "Language: Chinese (Standard)" | tee -a $confdir$lot;;
+      8:2) echo "Language: Ukrainian" | tee -a $confdir$lot;;
+      *) echo "Selection Voided" | tee -a $confdir$lot;; 
      esac	 
    done
    
@@ -877,43 +1002,44 @@ key="1"
 
 #Generate USB 
 function flash_gen {
-  #select flash disk
-  usbkeysel
-  if [ $usbselect = "x" ] ; then 
-   return
-  fi
+#select flash disk
+usbkeysel
+if [ $usbselect = "x" ] ; then 
+ return
+fi
 #mount image
-  echo "Mounting Firmware Image."
-  mount ${dir}iso/econnect-firmware.img
+echo "Mounting Firmware Image."
+mount ${dir}iso/econnect-firmware.img
 #copy payload to image
-  echo "Copying payload to image"
-  echo $preimage ${usbkey[$usbselect]} > /dev/tcp/localhost/5349
-  junk=$(nc -l 127.0.0.1 -p 5350)
-  sleep 5
+echo "Copying payload to image"
+echo $preimage ${usbkey[$usbselect]} > /dev/tcp/localhost/5349
+junk=$(nc -l 127.0.0.1 -p 5350)
+sleep 5
 #burn image to flash disk 
-  echo "Transfering image to USB flash disk. There may be a delay at 100% to allow for sync."
-  sudo /root/scripts/pvimage.sh ${usbkey[$usbselect]}
-  echo $image ${usbkey[$usbselect]} > /dev/tcp/localhost/5349
-  junk=$(nc -l 127.0.0.1 -p 5350)
-  #user has elevated priv to this script, allows progress to be displayed on screen
+echo "Transfering image to USB flash disk. There may be a delay at 100% to allow for sync."
+sudo /root/scripts/pvimage.sh ${usbkey[$usbselect]}
+echo $image ${usbkey[$usbselect]} > /dev/tcp/localhost/5349
+junk=$(nc -l 127.0.0.1 -p 5350)
+#user has elevated priv to this script, allows progress to be displayed on screen
 #  sudo /root/scripts/pvimage.sh ${usbkey[$usbselect]}
 #clean up
-  mount ${dir}iso/econnect-firmware.img
-  rm $dbstatic'update_DB_factory.sql'
-  rm $dir'payload/temp/'* 
-  rm $dir'payload/'*
-  echo $clean > /dev/tcp/localhost/5349
-  junk=$(nc -l 127.0.0.1 -p 5350)
-  umount ${dir}iso/econnect-firmware.img
-  echo "Transfer Complete, you may remove USB Flash disk."
-  echo -e "Press Any Key To Continue."
-  read junk
+mount ${dir}iso/econnect-firmware.img
+rm $dbstatic'update_DB_factory.sql'
+rm $dir'payload/temp/'* 
+rm $dir'payload/'*
+echo $clean > /dev/tcp/localhost/5349
+junk=$(nc -l 127.0.0.1 -p 5350)
+umount ${dir}iso/econnect-firmware.img
+echo "Transfer Complete, you may remove USB Flash disk."
+echo -e "Press Any Key To Continue."
+read junk
 }
+
 
 function build {
 ############################################
 #                                          #
-# Variables Collected Proceed with        #
+# Variables Collected Proceed with         #
 # System Build                             #
 #                                          #
 ############################################
@@ -924,40 +1050,65 @@ function build {
 cnt=1
 #create new resource file
 echo -en "{"\\n""\\t"\"default\": ">"$dir"/json/resource.json
+if (( $platform = 1)); then
   case ${languages[1]} in
- 1) echo -en "\"en-us\",\n	\"languages\": [ \"en-us\"">>"$dir"/json/resource.json;;
- 2) echo -en "\"en-uk\",\n	\"languages\": [ \"en-uk\"">>"$dir"/json/resource.json;;
- 3) echo -en "\"en-ca\",\n	\"languages\": [ \"en-ca\"">>"$dir"/json/resource.json;;
- 4) echo -en "\"sp-s\",\n	\"languages\": [ \"sp-s\"">>"$dir"/json/resource.json;;
- 5) echo -en "\"sp-m\",\n	\"languages\": [ \"sp-m\"">>"$dir"/json/resource.json;;
- 6) echo -en "\"por-p\",\n	\"languages\": [ \"por-p\"">>"$dir"/json/resource.json;;
- 7) echo -en "\"por-b\",\n	\"languages\": [ \"por-b\"">>"$dir"/json/resource.json;;
- 8) echo -en "\"ru\",\n	\"languages\": [ \"ru\"">>"$dir"/json/resource.json;;
- 9) echo -en "\"ger-g\",\n	\"languages\": [ \"ger-g\"">>"$dir"/json/resource.json;;
- 10) echo -en "\"ger-s\",\n	\"languages\": [ \"ger-s\"">>"$dir"/json/resource.json;;
- 11) echo -en "\"fr\",\n	\"languages\": [ \"fr\"">>"$dir"/json/resource.json;;
- 12) echo -en "\"ch\",\n	\"languages\": [ \"ch\"">>"$dir"/json/resource.json;;
- 13) echo -en "\"uk\",\n	\"languages\": [ \"uk\"">>"$dir"/json/resource.json;;
- 14) break;;
-esac
-for i in ${languages[2]} ${languages[3]}; do 
-  case $i in
-    1) echo -en ", \"en-us\"">>"$dir"/json/resource.json;;
-    2) echo -en ", \"en-uk\"">>"$dir"/json/resource.json;;
-    3) echo -en ", \"en-ca\"">>"$dir"/json/resource.json;;
-    4) echo -en ", \"sp-s\"">>"$dir"/json/resource.json;;
-    5) echo -en ", \"sp-m\"">>"$dir"/json/resource.json;;
-    6) echo -en ", \"por-p\"">>"$dir"/json/resource.json;;
-    7) echo -en ", \"por-b\"">>"$dir"/json/resource.json;;
-    8) echo -en ", \"ru\"">>"$dir"/json/resource.json;;
-    9) echo -en ", \"ger-g\"">>"$dir"/json/resource.json;;
-    10) echo -en ", \"ger-s\"">>"$dir"/json/resource.json;;
-    11) echo -en ", \"fr\"">>"$dir"/json/resource.json;;
-    12) echo -en ", \"ch\"">>"$dir"/json/resource.json;;
-    13) echo -en ", \"uk\"">>"$dir"/json/resource.json;;
+    1) echo -en "\"en-us\",\n	\"languages\": [ \"en-us\"">>"$dir"/json/resource.json;;
+    2) echo -en "\"en-uk\",\n	\"languages\": [ \"en-uk\"">>"$dir"/json/resource.json;;
+    3) echo -en "\"en-ca\",\n	\"languages\": [ \"en-ca\"">>"$dir"/json/resource.json;;
+    4) echo -en "\"sp-s\",\n	\"languages\": [ \"sp-s\"">>"$dir"/json/resource.json;;
+    5) echo -en "\"sp-m\",\n	\"languages\": [ \"sp-m\"">>"$dir"/json/resource.json;;
+    6) echo -en "\"por-p\",\n	\"languages\": [ \"por-p\"">>"$dir"/json/resource.json;;
+    7) echo -en "\"por-b\",\n	\"languages\": [ \"por-b\"">>"$dir"/json/resource.json;;
+    8) echo -en "\"ru\",\n	\"languages\": [ \"ru\"">>"$dir"/json/resource.json;;
+    9) echo -en "\"ger-g\",\n	\"languages\": [ \"ger-g\"">>"$dir"/json/resource.json;;
+    10) echo -en "\"ger-s\",\n	\"languages\": [ \"ger-s\"">>"$dir"/json/resource.json;;
+    11) echo -en "\"fr\",\n	\"languages\": [ \"fr\"">>"$dir"/json/resource.json;;
+    12) echo -en "\"ch\",\n	\"languages\": [ \"ch\"">>"$dir"/json/resource.json;;
+    13) echo -en "\"uk\",\n	\"languages\": [ \"uk\"">>"$dir"/json/resource.json;;
     14) break;;
   esac
-done
+  for i in ${languages[2]} ${languages[3]}; do 
+    case $i in
+      1) echo -en ", \"en-us\"">>"$dir"/json/resource.json;;
+      2) echo -en ", \"en-uk\"">>"$dir"/json/resource.json;;
+      3) echo -en ", \"en-ca\"">>"$dir"/json/resource.json;;
+      4) echo -en ", \"sp-s\"">>"$dir"/json/resource.json;;
+      5) echo -en ", \"sp-m\"">>"$dir"/json/resource.json;;
+      6) echo -en ", \"por-p\"">>"$dir"/json/resource.json;;
+      7) echo -en ", \"por-b\"">>"$dir"/json/resource.json;;
+      8) echo -en ", \"ru\"">>"$dir"/json/resource.json;;
+      9) echo -en ", \"ger-g\"">>"$dir"/json/resource.json;;
+      10) echo -en ", \"ger-s\"">>"$dir"/json/resource.json;;
+      11) echo -en ", \"fr\"">>"$dir"/json/resource.json;;
+      12) echo -en ", \"ch\"">>"$dir"/json/resource.json;;
+      13) echo -en ", \"uk\"">>"$dir"/json/resource.json;;
+      14) break;;
+    esac
+  done
+else
+  case ${languages[1]} in
+    1) echo -en "\"english\",\n	\"languages\": [ \"english\"">>"$dir"/json/resource.json;;
+    2) echo -en "\"spanish\",\n	\"languages\": [ \"spanish\"">>"$dir"/json/resource.json;;
+    3) echo -en "\"portuguese\",\n	\"languages\": [ \"portuguese\"">>"$dir"/json/resource.json;;
+    4) echo -en "\"russian\",\n	\"languages\": [ \"russian\"">>"$dir"/json/resource.json;;
+    5) echo -en "\"german\",\n	\"languages\": [ \"german\"">>"$dir"/json/resource.json;;
+    6) echo -en "\"french\",\n	\"languages\": [ \"french\"">>"$dir"/json/resource.json;;
+    7) echo -en "\"chinese\",\n	\"languages\": [ \"chinese\"">>"$dir"/json/resource.json;;
+    8) echo -en "\"ukrainian\",\n	\"languages\": [ \"ukrainian\"">>"$dir"/json/resource.json;;
+  esac
+  for i in {2..9}; do
+    case ${languages[$i]} in
+     1) echo -en ", \"english\"">>"$dir"/json/resource.json;;
+      2) echo -en ", \"spanish\"">>"$dir"/json/resource.json;;
+      3) echo -en ", \"portuguese\"">>"$dir"/json/resource.json;;
+      4) echo -en ", \"russian\"">>"$dir"/json/resource.json;;
+      5) echo -en ", \"german\"">>"$dir"/json/resource.json;;
+      6) echo -en ", \"french\"">>"$dir"/json/resource.json;;
+      7) echo -en ", \"chinese\"">>"$dir"/json/resource.json;;
+      8) echo -en ", \"ukrainian\"">>"$dir"/json/resource.json;;
+    esac
+  done
+fi
 echo -en "]" >>"$dir"/json/resource.json
 #add closing bracket
 echo -en "\n}">>"$dir"/json/resource.json
@@ -968,27 +1119,41 @@ tar -xzpf ${dir}GUI/$c2  -C /home/emteq
 cp ${dir}json/resource.json /home/emteq/$resfile
 tar -czpf ${dir}payload/temp/$c2 c2/
 rm -rf /home/emteq/c2
-#process database FMS widget
-fms_config
+#process database options
+db_config
 #create list file with resources
 cp ${dbstatic}update_DB_factory.sql ${dir}payload/temp/
-#cp ${dir}econapp/$econapp ${dir}payload/temp/
 echo "update_DB_factory.sql" > ${dir}payload/update_LIST_${lot}_Factory.lst
 echo "$c2" >> ${dir}payload/update_LIST_${lot}_Factory.lst
-#echo $econapp >> ${dir}payload/update_LIST_${lot}_Factory.lst
-if [ "$sip" = "y" ]; then
-  cp ${dir}scene/update_SCENES_125214_factorysip.tgz ${dir}payload/temp/
-  echo "update_SCENES_125214_factorysip.tgz" >> ${dir}payload/update_LIST_${lot}_Factory.lst
+echo "update_SCENE_factory.tgz" >> ${dir}payload/update_LIST_${lot}_Factory.lst
+#process scene scripts for platform and model
+if [[ $platform = 1 ]]; then
+  if [[ $type = [1,2,3,4] ]] ; then
+    cp ${dir}scene/$scene_450 ${dir}payload/temp/update_SCENE_Factory.tgz
   else
-  cp ${dir}scene/update_SCENES_125214_factory.tgz ${dir}payload/temp/
-  echo "update_SCENES_125214_factory.tgz" >> ${dir}payload/update_LIST_${lot}_Factory.lst
+    cp ${dir}scene/$scene_451 ${dir}payload/temp/update_SCENE_Factory.tgz
+  fi
+else
+  cp ${dir}scene/$scene_451 ${dir}payload/temp/update_SCENE_Factory.tgz #This will be max config
+#  gunzip ${dir}payload/temp/update_SCENE_Factory.tgz 
+#  case $light_package in 
+#      *) #Remove scripts from tarball as required
+#  gzip ${dir}payload/temp/update_SCENE_Factory.tar
+#  mv {dir}payload/temp/update_SCENE_Factory.tar.gz {dir}payload/temp/update_SCENE_Factory.tgz
+fi
+#If SIP is enabled we need to punch a hole in the firewall. Added script does this at boot
+if [ "$sip" = "y" ]; then
+  gunzip ${dir}payload/temp/update_SCENE_Factory.tgz
+  tar -rf ${dir}payload/temp/update_SCENE_Factory.tar --transform 's,.*/,scenes/,' ${dir}scenes/usb_fix.sh 
+  gzip ${dir}payload/temp/update_SCENE_Factory.tar
+  mv ${dir}payload/temp/update_SCENE_Factory.tar ${dir}payload/temp/update_SCENE_Factory.tgz
 fi
 tar -czpf  ${dir}payload/update_LIST_${lot}_Factory.tgz -C ${dir}payload/temp/ .
+
 }
 
 #Commit changes to econnect
 function commit_econnect {
-#Verify SSH is up with Copy resources to target
 header
 echo "Verify eConnect is connected to PC"
 echo "Using IP: "$econip
@@ -999,7 +1164,7 @@ done
 #Verify SSH is up with nmap 
 echo " "
 echo "Verifying Connection..."
-while [[ $up != "22/tcp open  ssh" ]]; do
+while [[ $up != "22/tcp open  ssh" ]]; do #########################################
   up=$(nmap $econip -PN -p ssh | grep open)
   x=$((x + 1))
   if [ $x -eq 10 ]; then
@@ -1013,23 +1178,10 @@ while [[ $up != "22/tcp open  ssh" ]]; do
   done
   fi
 done
-#Ensure we are in the proper run mode
-#mode=0
-#mode=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'") 
-#### Section Comm Out due to AVOIP req ####
-#if [[ $mode != 1 ]]; then
-#  echo 'eConnect in wrong run mode! Entering Production Mode.'
-#  while [[ $mode != 1 ]]; do
-#    sshb "'echo "Q3tm36170" | sudo -S /opt/eConnect/scripts/mode_swap/set_boot_mode.sh 1'"
-#    sleep 150
-#    isup
-#    mode=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
-#  done
-#fi
 
 #ensure eConnect is on known SSH list or scp copy will not function
 #This method is used over creating keys due to the readonly nature of the
-#econnect. We unfortunately lose the ability to monitor the upload process.
+#econnect. 
 ssh-keyscan -t rsa $econip > ~/.ssh/known_hosts
 echo " "
 echo "eConnect Located, Beginning File Transfer"
@@ -1042,16 +1194,8 @@ if [ $maptrans = 1 ] && [ "$map" != "7" ]; then
   echo " "
   echo "Configuring Map Partition"
   echo ""
-  #set to developer mode
-  mode=1 #enter while loop
-#  while [[ $mode != 4  ]]; do
-#    econip=$(cat /home/emteq/.econip)
-#    sshb "'echo "Q3tm36170" | sudo -S /opt/eConnect/scripts/mode_swap/set_boot_mode.sh 4'"
-#    sleep 120
-#    econip='10.0.9.1'
-#    isup
+  mode=1 
   sshbr "'echo "Q3tm36170" | sudo -S mount -o remount, rw /mnt/mmap'"
-#  done
   echo " "
   echo -e  "${red}Copying Map to eConnect${white}"
   echo " "
@@ -1070,16 +1214,7 @@ if [ $maptrans = 1 ] && [ "$map" != "7" ]; then
   echo " "
   echo -e "${red}Map transfer complete, returning to production mode.${white}"
   echo " "
-  #return to production mode
-#  mode=0
-#  while [ $mode != 1 ]; do
-#    econip='10.0.9.1'
-#    sshb "'echo "Q3tm36170" | sudo -S /opt/eConnect/scripts/mode_swap/set_boot_mode.sh 1'"
-#    sleep 120
-#    econip=$(cat /home/emteq/.econip)
-#    isup
-sshbr "'echo "Q3tm36170" | sudo -S mount -o remount /mnt/mmap'"
-#  done
+  sshbr "'echo "Q3tm36170" | sudo -S mount -o remount /mnt/mmap'"
 fi
   
 #deliver payload
@@ -1106,13 +1241,13 @@ echo ""
 sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "'/mnt/user/upload/update update_LIST_"$lot"_Factory.lst'"
 echo ""
 echo -e "${red}Verifying node is up. Please Wait.${white}"
-#Change date to future value to reduce time it takes for tar to complete. 
-sleep 125
+sleep 10
 mode=0
 while [[ $mode = 0 ]] ; do
   isup
   mode=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
 done
+#Change date to future value to reduce time it takes for tar to complete. 
 sshbr "'echo "Q3tm36170" | sudo -S date 121220202020'"
 #verify node is up and running before alerting user
 junk=""
@@ -1133,7 +1268,6 @@ echo "to eConnect. The eConnect will copy the necessary"
 echo "files and reboot. This process will take some time."
 echo " "
 echo "It is recommended to now set eConnect boot options."
-echo "Select option 3 from the main menu"
 echo " "
 echo -n "Press any key to restart the configuration tool"
 read junk
@@ -1415,14 +1549,14 @@ while : ; do
   echo "4. eConnect System Test"
   echo "5. Software Preferences"
   echo "6. Test GUI Interface"
-  echo "7. Transmit configuration data to Emteq"
+  echo "7. Transmit configuration data to BE Aerospace"
   echo "8. Update encoder board"
   echo ""
   if [ $config_file_cnt -gt 5 ] ; then
-    echo -e ${red}$config_file_cnt${white} "configuration files awaiting transmission to Emteq."
+    echo -e ${red}$config_file_cnt${white} "configuration files awaiting transmission to BE Aerospace."
     echo "Please ensure system has active internet connection and select option 5."
   else
-    echo -e ${green}$config_file_cnt${white} "configuration file(s) awaiting transmission to Emteq."
+    echo -e ${green}$config_file_cnt${white} "configuration file(s) awaiting transmission to BE Aerospace."
     echo " "
   fi
     echo -n "Please enter selection: "
@@ -1451,21 +1585,21 @@ while : ; do
       3) sys_config
          break_loop=0;;
       4) switch_functest
-	 if [[ "$cont" != "x" ]]; then
-		 encoder_functest
-	 fi
-	 if [[ "$cont" != "x" ]]; then 
-	 	arinc_functest
-	 fi
-	 if [[ "$cont" != "x" ]]; then 
-    	 	usb_functest
-	 fi
-	 if [[ "$cont" != "x" ]]; then
+        if [[ "$cont" != "x" ]]; then
+          encoder_functest
+        fi
+        if [[ "$cont" != "x" ]]; then 
+          arinc_functest
+        fi
+        if [[ "$cont" != "x" ]]; then 
+          usb_functest
+        fi
+        if [[ "$cont" != "x" ]]; then
          	echo "Please configure the boot options to customer requirements."
-	 	echo ""
-	 	echo -n "Press any key to configure boot options: "
-	 	sys_config
-	fi;;
+          echo ""
+          echo -n "Press any key to configure boot options: "
+          sys_config
+        fi;;
       5) syscon;;
       6) firefox 10.0.9.1;;
       7) sendconfig ;;
