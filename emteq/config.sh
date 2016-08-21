@@ -5,9 +5,9 @@
 
 #Dependencies
 #sshpass  
-#openssh
-#mysql client
-#GNU Coreutils
+#openssh 
+#mysql client apk tools
+#GNU Coreutils  Firefox
 
 #Changelog
 #2.1.0 
@@ -931,14 +931,14 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo -e "Lighting Packages Selected:" | tee $confdir$lot
     for bool in 1:$op1_bool 2:$op2_bool 3:$op3_bool 4:$op4_bool; do
       case $bool in
-        1:0) echo -e '\t Cabin Downwash \t\${red}Disabled' ${white}| tee $confdir$lot;;
-        1:1) echo -e '\t Cabin Downwash \t ${blue}Enabled' ${white}| tee $confdir$lot;;
-        2:0) echo -e '\t Cabin Spotlight \t ${red}Disabled'${white} | tee $confdir$lot;;
-        2:1) echo -e '\t Cabin Spotlight \t ${blue}Enabled'${white} | tee $confdir$lot;;
-        3:0) echo -e '\t Window Accent \t\t ${red}Disabled'${white} | tee $confdir$lot;;
-        3:1) echo -e '\t Window Accent \t\t ${blue}Enabled'${white} | tee $confdir$lot;;
-        4:0) echo -e '\t Table Downwash \t ${red}Disabled'${white} | tee $confdir$lot;;
-        4:1) echo -e '\t Table Downwash \t ${blue}Enabled' ${white}| tee $confdir$lot;;
+        1:0) echo -e "\t Cabin Downwash \t\${red}Disabled" ${white}| tee $confdir$lot;;
+        1:1) echo -e "\t Cabin Downwash \t ${blue}Enabled" ${white}| tee $confdir$lot;;
+        2:0) echo -e "\t Cabin Spotlight \t ${red}Disabled"${white} | tee $confdir$lot;;
+        2:1) echo -e "\t Cabin Spotlight \t ${blue}Enabled"${white} | tee $confdir$lot;;
+        3:0) echo -e "\t Window Accent \t\t ${red}Disabled"${white} | tee $confdir$lot;;
+        3:1) echo -e "\t Window Accent \t\t ${blue}Enabled"${white} | tee $confdir$lot;;
+        4:0) echo -e "\t Table Downwash \t ${red}Disabled"${white} | tee $confdir$lot;;
+        4:1) echo -e "\t Table Downwash \t ${blue}Enabled" ${white}| tee $confdir$lot;;
       esac
     done
   fi
