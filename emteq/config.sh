@@ -4,6 +4,7 @@
 #and is written specifically for the PC12/PC24 platform. 
 
 #Dependencies
+#apk tools
 #sshpass  
 #openssh
 #mysql client
@@ -469,6 +470,7 @@ if [ $sip = 'y' ] ; then
   echo "UPDATE econnect.econnect_config SET econnect_ip='10.0.9.1' WHERE ecms_id=1;" >> $dbstatic"update.sql"
 fi
 #Process lighting for PC24
+#This will need more work when scene buttons are added. 
 if [[ $platform = 2 ]]; then
   for bool in 1:$op1_bool 2:$op2_bool 3:$op3_bool 4:$op4_bool; do
     case $bool in
@@ -586,6 +588,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     esac
   done
   #Begin Lighting Configuration, Skip if PC12 
+  
   if [[ $platform = 2 ]]; then
     op1_color='\e[97m'
     op2_color='\e[97m'
@@ -1135,6 +1138,7 @@ if [[ $platform = 1 ]]; then
   fi
 else
   cp ${dir}scene/$scene_451 ${dir}payload/temp/update_SCENE_Factory.tgz #This will be max config
+###I thought I would remove files but decided unused script files are ok
 #  gunzip ${dir}payload/temp/update_SCENE_Factory.tgz 
 #  case $light_package in 
 #      *) #Remove scripts from tarball as required
@@ -1566,7 +1570,7 @@ while : ; do
          config  #run through config routine
          if [[ $break_loop != 1 ]]; then
            build #build system
-           commit_econnect
+           commit_econnect #commit files to econnect
          fi;;
       2) res=2
          config #run through config routine.
@@ -1608,4 +1612,3 @@ while : ; do
          echo -n "Please enter selection: ";;
     esac
 done
-
