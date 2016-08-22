@@ -6,9 +6,9 @@
 #Dependencies
 #apk tools
 #sshpass  
-#openssh
-#mysql client
-#GNU Coreutils
+#openssh 
+#mysql client apk tools
+#GNU Coreutils  Firefox
 
 #Changelog
 #2.1.0 
@@ -64,9 +64,10 @@ source ./.config.cfg
 
 #update settings
 function cfg_update () {
-sed -i "s/\($1 *= *\).*/\1\'$2/\'" ./config.cfg
-}
+#sed -i "s/\($1 *= *\).*/\1\'$2/\'" ./config.cfg
 
+sed -i "s,^\($1=\).*,\1'$2'," .config.cfg
+}
 #system variables
 #c2=$( cat /home/emteq/.c2 ) 
 #econip=$( cat /home/emteq/.econip )
@@ -75,10 +76,11 @@ sed -i "s/\($1 *= *\).*/\1\'$2/\'" ./config.cfg
 #encoder=$( cat /home/emteq/.encoder )
 res=0
 ver="2.1.0"
-dir="/home/emteq/.resources/"
+dir=${PWD}/.resources/
+#"/home/emteq/.resources/"
 dbdir=${dir}db/
 dbstatic=${dir}/dbstatic/
-confdir=${dir}/config/
+confdir=${dir}config/
 resfile="c2/src/presentation/resources/resource.json"
 #for i in 1 2 ; do
 #  dbfiles[$i]=$( head -n $i /home/emteq/.dbfiles | tail -1 )
@@ -131,7 +133,7 @@ for i  in ${usbkey[@]} ; do
   cnt=$((cnt + 1))
 done
 echo " "
-echo -n "Enter Selection or (x) to restart: "
+echo -ne "Enter Selection or (${red}x${white}) to restart: "
 while : ; do
   read usbselect
   case $usbselect in 
@@ -215,7 +217,7 @@ function sendconfig {
     if [ $cnt -gt 12 ] ; then
       echo "Server not found, please check your internet connection."
       echo "Network reports $up"
-      echo -n "Press (enter) to exit: "
+      echo -ne 'Press '${green}'(enter)'${white} 'to exit: '
       read junk
       break
     fi
@@ -269,6 +271,7 @@ function isup() {
 
 #Modify software parameters
 function syscon {
+source ./.config.cfg 
 header
 echo "Current Settings:"
 echo -e "1. eConnect IP: "${blue}$econip${white}
@@ -286,32 +289,37 @@ echo -e "12. encoder board software: "${blue}$encoder${white}
 echo -e "13. Update System with EMTEQ package: "
 echo ' '
 while : ; do
-  echo -n "Please enter item to modify or (x) to exit: "
+  echo -ne "Please enter item to modify or (${red}x${white}) to exit: "
   read junk
   case $junk in
-    1) echo " "
+    1) 
+      echo " "
       echo -n "Enter new IP address: "
       read econip
       cfg_update econip $econip
-      break;;
-    [2-3]) echo " "
+      break
+    ;;
+    [2-3]) 
+      echo " "
       cnt=1
       for file in $( ls $dir"GUI/" ) ; do
         echo $cnt "." $file
         files[$cnt]=$file
         cnt=$((cnt + 1))      
       done
-        echo " "
-        echo -n "Select GUI file: "
-        read gfile
-        c2=${files[$gfile]}
-        if [[  $junk = 2 ]]; then
-          cfg_update c2_450 $c2
-        else
-          cfg_update c2_451 $c2
-        fi
-        break;;
-    [4-5]) echo " "
+      echo " "
+      echo -n "Select GUI file: "
+      read gfile
+      c2=${files[$gfile]}
+      if [[  $junk = 2 ]]; then
+        cfg_update c2_450 $c2
+      else
+        cfg_update c2_451 $c2
+      fi
+      break
+    ;;
+    [4-5]) 
+      echo " "
       cnt=1
       for file in $( ls ${dir}iso/ ) ; do
         if [[ $file != 'econnect-firmware.img' ]] && [[ $file != 'firmware' ]]; then
@@ -328,7 +336,7 @@ while : ; do
       ##########AN FTAB NEEDS TO BE CREATED FOR 451##############
       if [[ $fstab = 'F' ]]; then
         sudo /root/scripts/ftab F
-          else
+      else
         sudo /root/scripts/ftab
       fi
       if [[ $junk = 4 ]]; then
@@ -338,9 +346,11 @@ while : ; do
       fi
       echo "Updating image file..."
       rsync --progress ${dir}iso/${iso} ${dir}iso/econnect-firmware.img
-      break;;
+      break
+    ;;
     #############################################################
-    [6-9]) echo "Warning - Selecting the wrong file will cause configurations to fail!"
+    [6-9]) 
+      echo "Warning - Selecting the wrong file will cause configurations to fail!"
       echo " "
       cnt=1
       for file in $( ls $dbdir ) ; do
@@ -367,8 +377,27 @@ while : ; do
         8) cfg_update db_451_2000 ${files[$sel]};;
         9) cfg_update db_451_5000 ${files[$sel]};;
       esac
+      break
+    ;;
+    [1][0-1]) 
+      echo " "
+      cnt=1
+      for file in $( ls ${dir}scene/ ) ; do
+        echo $cnt "." $file
+        files[$cnt]=$file
+        cnt=$((cnt + 1))
+      done
+      echo " "
+      echo -n "Select Scene file: "
+      read sfile
+      scene_file=${files[$sfile]}
+      if [[  $junk = 10 ]]; then
+        cfg_update scene_450 $scene_file
+      else
+        cfg_update scene_451 $scene_file
+      fi
       break;;
-    10) echo ""
+    12) echo ""
       cnt=1
       for file in $( ls ${dir}encoder/ ) ; do
         echo $cnt". "$file
@@ -381,7 +410,7 @@ while : ; do
       encoder=${files[$ifile]}
       echo encoder $encoder
       break;;   
-    11) header
+    13) header
       echo "Please insert USB key with update file(s)"
       echo -n "Press any key to continue"
       read junk
@@ -421,7 +450,7 @@ while : ; do
      reboot
      break;;
     x) break;;   
-    *) echo -n "Please enter a valid selection: ";;
+    *) echo "Please enter a valid selection: ";;
   esac
 done         
 }
@@ -612,7 +641,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
       echo -e '3. Window Accent Lights:\t\t'${op3_color}$op3_installed${white}
       echo -e '4. Table Downwash Lights:\t\t'${op4_color}$op4_installed${white}
       echo ' '
-      echo -ne 'Enter Package Number to Enable or (c) to Confirm: '
+      echo -ne 'Enter Package Number to Enable or ('${green}'c'${white}') to Confirm: '
       read junk
       case $junk in
         1) 
@@ -684,16 +713,22 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     esac
     echo " "
     while : ; do
-      echo -n "Enter Selection or (x) to Restart: " 
+      echo -ne "Enter Selection or (${red}x${white}) to Restart: " 
       read map
       case $map in 
-        [1-6]) case $type in
-          [1,2,5,6]) if [ "$map" = 6 ] ; then
-              echo "Not a valid selection: $map"
-          else
-              break
-            fi
-          esac;;
+        [1-6]) 
+          case $type in
+            [1,2,5,6]) 
+              if [ "$map" = 6 ] ; then
+                echo "Not a valid selection: $map"
+              else
+                break
+              fi
+            ;;
+            *) break
+            ;;
+          esac
+          ;;
         x) break;;
         *) echo "Not a valid selection: $map";;
       esac
@@ -737,7 +772,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   if [ $break_loop = "x" ] ; then 
     break
   fi
-  if [[ $platrorm = 1 ]] ; then
+  if [[ $platform = 1 ]] ; then
     echo "Select Language and Flag. Up to 3 selections allowed."
     echo " "
     echo "Selection	Language		Map"
@@ -771,25 +806,25 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo "7.		Chinese (Standard)"
     echo "8.		Ukrainian"
     echo " "
-    lang_end=8
+    lang_end=9
   fi
   i=1
   until [ $i = $lang_end ]; do
-    echo -n "Enter Selection" $i "(c) To Complete Selection(s) Or (x) to Restart: " 
-    read languages[$i]
+    echo -ne "Enter Selection" $i "(${green}c${white}) To Complete Selection(s) Or (${red}x${white}) to Restart: " 
+    read languages[$i] 
     if [[ $platform = 1 ]]; then
       case ${languages[$i]} in
         [1-9]|[1][0-6]) 
-          if [[ $( echo ${languages[@]} | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then #compares uniq to total index
-          echo "Language" ${language[$i]} "already selected."
-          i=$(($i - 1))
+          if [[ $( echo ${languages[@]} | tr ' ' '\n' | uniq | wc -l) != ${#languages[@]} ]]; then #compares uniq to total index
+            echo "Language" ${language[$i]} "already selected."
+            i=$(($i - 1))
           fi
         ;;
       esac
     else
       case ${languages[$i]} in
         [1-9])
-          if [[ $( echo ${languages[@]} | tr ' ' '/n' | uniq | wc -l) != ${#languages[@]} ]]; then
+          if [[ $( echo ${languages[@]} | tr ' ' '\n' | uniq | wc -l) != ${#languages[@]} ]]; then
             echo "Language" ${language[$i]} "already selected."
             i=$(($i - 1))
           fi
@@ -801,14 +836,14 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
       esac
     fi
       case ${languages[$i]}:$i in 
-        [1-9]|[1][0-6]:*) #nothing to do here
+        [1-9]:*|[1][0-6]:*) #'nothing to do here' #debug
         ;; 
         c:1)   
           echo "At least 1 language must be selected."
           i=$(($i - 1))
         ;; 
         c:*) 
-          for void in {$i..$lang_end}; do
+          for void in $(seq $i $lang_end); do #{..} doesnt like var Seq does!
             languages[$void]='void'
             i=$lang_end
           done
@@ -849,7 +884,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   echo " "
   count=1
   until [ $count = 10 ]; do
-    echo -ne "Enter Selection" $count "of 9 Or (c) To Complete Selection(s) Or (x) To Restart: "
+    echo -ne "Enter Selection" $count "of 9 Or (${green}c${white}) To Complete Selection(s) Or (${red}x${white}) To Restart: "
     read field1[$count]       
     case ${field1[$count]} in
       [1-9]|[1][0-4]) 
@@ -883,77 +918,90 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   header
   echo "System Load-out"
   case "$type" in
-    1) echo "Model: CWR450-2000-01" | tee $confdir$lot;;
-    2) echo "Model: CWR450-5000-01" | tee $confdir$lot;;
-    3) echo "Model: CWR450-2000-02" | tee $confdir$lot;;
-    4) echo "Model: CWR450-5000-02" | tee $confdir$lot;;
-    5) echo "Model: CWR451-2000-01" | tee $confdir$lot;;
-    6) echo "Model: CWR451-5000-01" | tee $confdir$lot;;
-    7) echo "Model: CWR451-2000-02" | tee $confdir$lot;;
-    8) echo "Model: CWR451-5000-02" | tee $confdir$lot;;
+    1) echo -e "Model: ${blue}CWR450-2000-01${white}" | tee $confdir$lot;;
+    2) echo -e "Model: ${blue}CWR450-5000-01${white}" | tee $confdir$lot;;
+    3) echo -e "Model: ${blue}CWR450-2000-02${white}" | tee $confdir$lot;;
+    4) echo -e "Model: ${blue}CWR450-5000-02${white}" | tee $confdir$lot;;
+    5) echo -e "Model: ${blue}CWR451-2000-01${white}" | tee $confdir$lot;;
+    6) echo -e "Model: ${blue}CWR451-5000-01${white}" | tee $confdir$lot;;
+    7) echo -e "Model: ${blue}CWR451-2000-02${white}" | tee $confdir$lot;;
+    8) echo -e "Model: ${blue}CWR451-5000-02${white}" | tee $confdir$lot;;
   esac
-  if (( $platform = 1 )); then
-	echo "Platform: PC12" | tee $confdir$lot
+  if [[ $platform = 1 ]]; then
+    echo -e "Platform: ${blue}PC12${white}" | tee $confdir$lot
   else
-	echo "Platform: PC24" | tee $confdir$lot
+    echo -e "Platform: ${blue}PC24${white}" | tee $confdir$lot
+    echo -e "Lighting Packages Selected:" | tee $confdir$lot
+    for bool in 1:$op1_bool 2:$op2_bool 3:$op3_bool 4:$op4_bool; do
+      case $bool in
+        1:0) echo -e "\t Cabin Downwash \t\${red}Disabled" ${white}| tee $confdir$lot;;
+        1:1) echo -e "\t Cabin Downwash \t ${blue}Enabled" ${white}| tee $confdir$lot;;
+        2:0) echo -e "\t Cabin Spotlight \t ${red}Disabled"${white} | tee $confdir$lot;;
+        2:1) echo -e "\t Cabin Spotlight \t ${blue}Enabled"${white} | tee $confdir$lot;;
+        3:0) echo -e "\t Window Accent \t\t ${red}Disabled"${white} | tee $confdir$lot;;
+        3:1) echo -e "\t Window Accent \t\t ${blue}Enabled"${white} | tee $confdir$lot;;
+        4:0) echo -e "\t Table Downwash \t ${red}Disabled"${white} | tee $confdir$lot;;
+        4:1) echo -e "\t Table Downwash \t ${blue}Enabled" ${white}| tee $confdir$lot;;
+      esac
+    done
   fi
-  echo "Lot:" $lot | tee -a $confdir$lot
-  echo "Aircraft ID:" $tail | tee -a $confdir$lot
-  echo "GUI Revision:" $c2 | tee -a $confdir$lot
-  echo "Firmware:" $iso | tee -a $confdir$lot 
+  echo -e "Lot:" ${blue} $lot ${white}| tee -a $confdir$lot
+  echo -e "Aircraft ID:"${blue} $tail ${white}| tee -a $confdir$lot
+  echo -e "GUI Revision:"${blue} $c2 ${white}| tee -a $confdir$lot
+  echo -e "Firmware:" ${blue}$iso ${white}| tee -a $confdir$lot 
 
   case "$type" in
-    [1,3]) echo "Base Database: " $db_450_2000 | tee -a $confdir$lot;;
-    [2,4]) echo "Base Database: " $db_450_5000 | tee -a $confdir$lot;;
-    [5,7]) echo "Base Database: " $db_451_2000 | tee -a $confdir$lot;;
-    [6,8]) echo "Base Database: " $db_451_2000 | tee -a $confdir$lot;;
+    [1,3]) echo -e "Base Database: " ${blue}$db_450_2000 ${white}| tee -a $confdir$lot;;
+    [2,4]) echo -e "Base Database: " ${blue}$db_450_5000 ${white}| tee -a $confdir$lot;;
+    [5,7]) echo -e "Base Database: " ${blue}$db_451_2000 ${white}| tee -a $confdir$lot;;
+    [6,8]) echo -e "Base Database: " ${blue}$db_451_2000 ${white}| tee -a $confdir$lot;;
   esac
-  echo $(date) | tee -a $confdir$lot
+  echo -e $(date) | tee -a $confdir$lot
   case "$sip" in
-    y) echo "AVOIP Enabled" | tee -a $confdir$lot;;
-    n) echo "AVOIP Disabled" | tee -a $confdir$lot;;
+    y) echo -e "AVOIP ${blue}Enabled${white}" | tee -a $confdir$lot;;
+    n) echo -e "AVOIP ${red}Disabled${white}" | tee -a $confdir$lot;;
   esac
   echo " "
   echo "Map Selection:"
-  if (( $res = 1 )); then
+  if [[ $res = 1 ]]; then
     case $map in
-      1) echo "Map: North America" | tee -a $confdir$lot;;
-      2) echo "Map: Europe" | tee -a $confdir$lot;;
-      3) echo "Map: Africa/Middle East" | tee -a $confdir$lot;;
-      4) echo "Map: South America" | tee -a $confdir$lot;;
-      5) echo "Map: Asia" | tee -a $confdir$lot;;
-      6) echo "Map: World" | tee -a $confdir$lot;;
+      1) echo -e "Map: ${blue}North America${white}" | tee -a $confdir$lot;;
+      2) echo -e "Map: ${blue}Europe${white}" | tee -a $confdir$lot;;
+      3) echo -e "Map: ${blue}Africa/Middle East${white}" | tee -a $confdir$lot;;
+      4) echo -e "Map: ${blue}South America${white}" | tee -a $confdir$lot;;
+      5) echo -e "Map: ${blue}Asia${white}" | tee -a $confdir$lot;;
+      6) echo -e "Map: ${blue}World${white}" | tee -a $confdir$lot;;
     esac
   else
-    echo "Firmware Upgrade, Map Not Selected." | tee -a $confdir$lot
+    echo -e "Firmware Upgrade, Map Not Selected." | tee -a $confdir$lot
   fi
 #Capturing Language Selections
   echo " "
   echo "Language Selection(s):"
   for i in ${languages[@]}; do
     case $i:$platform in
-      1:1) echo "Language: English	Map: USA" | tee -a $confdir$lot;;
-      2:1) echo "Language: English	Map: UK" | tee -a $confdir$lot;;
-      3:1) echo "Language: English	Map: Canada" | tee -a $confdir$lot;;
-      4:1) echo "Language: Spanish	Map: Spain" | tee -a $confdir$lot;;
-      5:1) echo "Language: Spanish	Map: Mexico" | tee -a $confdir$lot;;
-      6:1) echo "Language: Portuguese Map: Portugal" | tee -a $confdir$lot;;
-      7:1) echo "Language: Portuguese	Map: Brazil" | tee -a $confdir$lot;;
-      8:1) echo "Language: Russian Map: Russia" | tee -a $confdir$lot;;
-      9:1) echo "Language: German	Map: Germany" | tee -a $confdir$lot;;
-      10:1) echo "Language: German	Map: Switzerland" | tee -a $confdir$lot;;
-      11:1) echo "Language: French	Map: France" | tee -a $confdir$lot;;
-      12:1) echo "Language: Chinese       Map: China" | tee -a $confdir$lot;;
-      13:1) echo "Language: Ukrainian	Map: Ukraine" | tee -a $confdir$lot;;
-      1:2) echo "Language: English" | tee -a $confdir$lot;;
-      2:2) echo "Language: Spanish" | tee -a $confdir$lot;;
-      3:2) echo "Language: Portugese" | tee -a $confdir$lot;;
-      4:2) echo "Language: Russian" | tee -a $confdir$lot;;
-      5:2) echo "Language: German" | tee -a $confdir$lot;;
-      6:2) echo "Language: French" | tee -a $confdir$lot;;
-      7:2) echo "Language: Chinese (Standard)" | tee -a $confdir$lot;;
-      8:2) echo "Language: Ukrainian" | tee -a $confdir$lot;;
-      *) echo "Selection Voided" | tee -a $confdir$lot;; 
+      1:1) echo -e "Language: ${blue}English	Map: USA${white}" | tee -a $confdir$lot;;
+      2:1) echo -e "Language: ${blue}English	Map: UK${white}" | tee -a $confdir$lot;;
+      3:1) echo -e "Language: ${blue}English	Map: Canada${white}" | tee -a $confdir$lot;;
+      4:1) echo -e "Language: ${blue}Spanish	Map: Spain${white}" | tee -a $confdir$lot;;
+      5:1) echo -e "Language: ${blue}Spanish	Map: Mexico${white}" | tee -a $confdir$lot;;
+      6:1) echo -e "Language: ${blue}Portuguese Map: Portugal${white}" | tee -a $confdir$lot;;
+      7:1) echo -e "Language: ${blue}Portuguese	Map: Brazil${white}" | tee -a $confdir$lot;;
+      8:1) echo -e "Language: ${blue}Russian Map: Russia${white}" | tee -a $confdir$lot;;
+      9:1) echo -e "Language: ${blue}German	Map: Germany${white}" | tee -a $confdir$lot;;
+      10:1) echo -e "Language: ${blue}German	Map: Switzerland${white}" | tee -a $confdir$lot;;
+      11:1) echo -e "Language: ${blue}French	Map: France${white}" | tee -a $confdir$lot;;
+      12:1) echo -e "Language: ${blue}Chinese       Map: China${white}" | tee -a $confdir$lot;;
+      13:1) echo -e "Language: ${blue}Ukrainian	Map: Ukraine${white}" | tee -a $confdir$lot;;
+      1:2) echo -e "Language: ${blue}English${white}" | tee -a $confdir$lot;;
+      2:2) echo -e "Language: ${blue}Spanish${white}" | tee -a $confdir$lot;;
+      3:2) echo -e "Language: ${blue}Portugese${white}" | tee -a $confdir$lot;;
+      4:2) echo -e "Language: ${blue}Russian${white}" | tee -a $confdir$lot;;
+      5:2) echo -e "Language: ${blue}German${white}" | tee -a $confdir$lot;;
+      6:2) echo -e "Language: ${blue}French${white}" | tee -a $confdir$lot;;
+      7:2) echo -e "Language: ${blue}Chinese (Standard)${white}" | tee -a $confdir$lot;;
+      8:2) echo -e "Language: ${blue}Ukrainian${white}" | tee -a $confdir$lot;;
+      *) echo -e "Selection ${red}Voided${white}" | tee -a $confdir$lot;; 
      esac	 
    done
    
@@ -962,29 +1010,31 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   echo "FMS Selections"
   count=1
   echo " "
-  echo "FMS Field(s)" | tee -a $confdir$lot
+  echo -e "FMS Field(s)${blue}" | tee -a $confdir$lot
   for i in ${field1[@]}; do
     case $i in
-      1) echo "Altitude" | tee -a $confdir$lot;;
-      2) echo "Airspeed" | tee -a $confdir$lot;;
-      3) echo "Mach" | tee -a $confdir$lot;;
-      4) echo "Ground Speed" | tee -a $confdir$lot;;
-      5) echo "Latitude" | tee -a $confdir$lot;;
-      6) echo "Longitude" | tee -a $confdir$lot;;
-      7) echo "Heading" | tee -a $confdir$lot;;
-      8) echo "Wind Speed" | tee -a $confdir$lot;;
-      9) echo "Wind Direction" | tee -a $confdir$lot;;
-      10) echo "Air Temperature" | tee -a $confdir$lot;;
-      11) echo "Date" | tee -a $confdir$lot;;
-      12) echo "GMT" | tee -a $confdir$lot;;
-      13) echo "Time To Destination" | tee -a $confdir$lot;;
-      14) echo "Distance to Destinaton" | tee -a $confdir$lot;;
-      17) echo "Selection Voided" | tee -a $confdir$lot;;
+      1) echo -e - "Altitude" | tee -a $confdir$lot;;
+      2) echo -e "Airspeed" | tee -a $confdir$lot;;
+      3) echo -e "Mach" | tee -a $confdir$lot;;
+      4) echo -e "Ground Speed" | tee -a $confdir$lot;;
+      5) echo -e "Latitude" | tee -a $confdir$lot;;
+      6) echo -e "Longitude" | tee -a $confdir$lot;;
+      7) echo -e "Heading" | tee -a $confdir$lot;;
+      8) echo -e "Wind Speed" | tee -a $confdir$lot;;
+      9) echo -e "Wind Direction" | tee -a $confdir$lot;;
+      10) echo -e "Air Temperature" | tee -a $confdir$lot;;
+      11) echo -e "Date" | tee -a $confdir$lot;;
+      12) echo -e "GMT" | tee sed -i  "s,\x1B\[[0-9;]*[a-zA-Z],,g" test-a $confdir$lot;;
+      13) echo -e "Time To Destination" | tee -a $confdir$lot;;
+      14) echo -e "Distance to Destinaton" | tee -a $confdir$lot;;
+      17) echo -e "Selection Voided" | tee -a $confdir$lot;;
     esac
   done
-  echo " "
+  echo -e "${white} "
+  #strip all our fancy color from the log file
+  sed -i  "s,\x1B\[[0-9;]*[a-zA-Z],,g" $confdir$lot
   while : ; do
-    echo -ne "Confirm Load-out. Press (${green}ENTER${white}) to continue or (x) to reset"
+    echo -ne "Confirm Load-out. Press (${green}ENTER${white}) to continue or (${red}x${white}) to reset"
     read -n 1 key
     case $key in
       x) break_loop=1
@@ -1349,7 +1399,7 @@ while : ;do
 	else
 		echo -e "WiFi Signal NOT located - ${red}Fail${white}"
 		echo ""
-		echo -ne "Press ${green}ENTER${white} to retry or (x) to exit: "
+		echo -ne "Press ${green}ENTER${white} to retry or (${red}x${white}) to exit: "
 		read cont
 		if [[ "$cont" = "x" ]]; then return; fi
 	fi
@@ -1384,7 +1434,7 @@ for i in 2 3 4 5 6 7 1; do
 			echo "Packet Loss $reply% - FAIL"
 			echo "Please check Connection!"
 			echo ""
-			echo -ne "Press ${green}Enter${white} to Retry or (x) to Exit."
+			echo -ne "Press ${green}Enter${white} to Retry or (${red}x${white}) to Exit."
 			read cont
 			if [[ "$cont" = "x" ]]; then break; fi
 		fi
@@ -1413,7 +1463,7 @@ function encoder_functest {
 				break
 			fi
 			echo "Unable to locate encoder board. Please check your connection."
-			echo -ne "Press ${green}ENTER${white} to restest ${green}(r)${white} to restart encoder, or ${green}(x)${white} to exit: "
+			echo -ne "Press ${green}ENTER${white} to retry ${green}(r)${white} to restart encoder, or ${red}(x)${white} to exit: "
 			read cont
 			if [[ "$cont" = "x" ]]; then break; fi
 			if [[ "$cont" = "r" ]]; then
@@ -1447,7 +1497,7 @@ while : ; do
 	echo -n  "Did both tests Pass? (Y)es or (N)o?"
 	read cont
 	if [[ "$cont" = "n" ]]; then
-		echo -n "Enter to repeat test or (x) to exit."
+		echo -ne "Enter to repeat test or (${red}x${white}) to exit."
 		read cont
 		if [[ "$cont" = "x" ]]; then break; fi
 	else
@@ -1478,7 +1528,7 @@ function usb_check {
 		if [[ $count = 15 ]]; then 
 			count=0
 			echo -e "${red}USB Not Found${white}"
-			echo -ne "${green}ENTER${white} to retry or (x) to exit"
+			echo -ne "${green}ENTER${white} to retry or (${red}x${white}) to exit"
 			read cont
 			echo ""
 		fi
@@ -1507,7 +1557,7 @@ header
          echo "2. Satcom1 Mode"
          echo "3. Client Mode"
 	 echo ""
-         echo -n "Please enter selection or (x) to restart: "
+         echo -ne "Please enter selection or (${red}x${white}) to restart: "
          while : ; do
            read avoip
            case $avoip in
@@ -1578,7 +1628,7 @@ while : ; do
            header
            echo "Please insert USB Flash Disk."
            echo ""
-           echo -e "Press enter to continue or (x) to restart."
+           echo -e "Press enter to continue or (${red}x${white}) to restart."
            read junk
            if [ $junk = 'x' ] ; then break_loop=1; fi
            if [[ $break_loop != 1 ]]; then
