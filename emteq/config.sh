@@ -602,7 +602,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
         done
       echo -n "Enter Aircraft Tail ID: "
       read tail
-      echo -n "Will AVOIP be enabled, (y)es (n)o: " #***Need to determine how to set RUNMODE 5***
+      echo -n "Will AVIOIP be enabled, (y)es (n)o: " #***Need to determine how to set RUNMODE 5***
       read sip
       while : ; do
         case $sip in
@@ -793,7 +793,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo " "
     lang_end=4
   else
-    echo "Select Language and Flag. Up to 3 selections allowed."
+    echo "Select Language and Flag. Up to 8 selections allowed."
     echo " "
     echo "Selection	Language		Map"
     echo " "
@@ -805,7 +805,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo "6.		French"
     echo "7.		Chinese (Standard)"
     echo "8.		Ukrainian"
-    echo " "
+    echo " " #add select all option ***
     lang_end=9
   fi
   i=1
@@ -887,7 +887,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo -ne "Enter Selection" $count "of 9 Or (${green}c${white}) To Complete Selection(s) Or (${red}x${white}) To Restart: "
     read field1[$count]       
     case ${field1[$count]} in
-      [1-9]|[1][0-4]) 
+      [1-9]|[1][0-4]) #try , seperator 
         count=$((count + 1))
       ;;
       x) 
@@ -1200,7 +1200,7 @@ if [ "$sip" = "y" ]; then
   gunzip ${dir}payload/temp/update_SCENE_Factory.tgz
   tar -rf ${dir}payload/temp/update_SCENE_Factory.tar --transform 's,.*/,scenes/,' ${dir}scenes/usb_fix.sh 
   gzip ${dir}payload/temp/update_SCENE_Factory.tar
-  mv ${dir}payload/temp/update_SCENE_Factory.tar ${dir}payload/temp/update_SCENE_Factory.tgz
+  mv ${dir}payload/temp/update_SCENE_Factory.tar.gz ${dir}payload/temp/update_SCENE_Factory.tgz
 fi
 tar -czpf  ${dir}payload/update_LIST_${lot}_Factory.tgz -C ${dir}payload/temp/ .
 
@@ -1218,7 +1218,7 @@ done
 #Verify SSH is up with nmap 
 echo " "
 echo "Verifying Connection..."
-while [[ $up != "22/tcp open  ssh" ]]; do #########################################
+while [[ $up != "22/tcp open  ssh" ]]; do ### add breakpoint ***
   up=$(nmap $econip -PN -p ssh | grep open)
   x=$((x + 1))
   if [ $x -eq 10 ]; then
@@ -1226,12 +1226,15 @@ while [[ $up != "22/tcp open  ssh" ]]; do ######################################
   echo "Connection not found!"
   echo "Check power and connection"
   while [[ $x != "" ]]; do
-  echo -e "Press ${green}ENTER${white} to continue:" ; read x
+  echo -e "Press ${green}ENTER${white} to retry or (${red}x{$white} to cancel:" 
+  read x
+  if [[ $x = 'x' ]]; then break; fi
   header
   echo "Verifying Connection..."
   done
   fi
 done
+if [[ $x = 'x' ]]; then break; fi
 
 #ensure eConnect is on known SSH list or scp copy will not function
 #This method is used over creating keys due to the readonly nature of the
@@ -1242,7 +1245,7 @@ echo "eConnect Located, Beginning File Transfer"
 #If map is needed, copy first
 if [ $maptrans = 1 ] && [ "$map" != "7" ]; then
   #prepare econnect for map copy
-  echo "This process may take up to 20 minutes"
+  echo "This process may take up to 20 minutes" #reduce time for cwr451
   echo ""
   echo -e "${red}\e[5mMap selected for transfer.${normal}\e[25m"
   echo " "
@@ -1266,7 +1269,7 @@ if [ $maptrans = 1 ] && [ "$map" != "7" ]; then
     6) sshpass -f /home/emteq/.id rsync --progress "$dir"map/wo.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
   esac
   echo " "
-  echo -e "${red}Map transfer complete, returning to production mode.${white}"
+  echo -e "${red}Map transfer complete, returning to production mode.${white}" #fixme
   echo " "
   sshbr "'echo "Q3tm36170" | sudo -S mount -o remount /mnt/mmap'"
 fi
@@ -1274,6 +1277,7 @@ fi
 #deliver payload
 sshpass -f /home/emteq/.id scp $dir"payload/update_LIST_"$lot"_Factory.tgz" emteq@$econip:/mnt/user/upload/
 sshpass -f /home/emteq/.id scp $dir"payload/update_LIST_"$lot"_Factory.lst" emteq@$econip:/mnt/user/upload/
+sshpass -f /home/emteq/.id scp $confdir$lot emteq@$econip:/mnt/user/upload/.config_$lot.txt 
 #placeholder for for slideshow widget
 sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "'mkdir /mnt/user/upload/slideshow'"
 sshpass -f /home/emteq/.id scp ${dir}other/greyframe.png emteq@$econip:/mnt/user/upload/slideshow/
@@ -1302,7 +1306,7 @@ while [[ $mode = 0 ]] ; do
   mode=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
 done
 #Change date to future value to reduce time it takes for tar to complete. 
-sshbr "'echo "Q3tm36170" | sudo -S date 121220202020'"
+sshbr "'echo "Q3tm36170" | sudo -S date 121220202020'" #use date of local system ***
 #verify node is up and running before alerting user
 junk=""
 while [[ $junk = "" ]];do
