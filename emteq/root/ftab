@@ -1,7 +1,3 @@
 #!/bin/bash
 #modify fstab
-if [[ $1 = 'F' ]]; then
-	cp /home/emteq/.resources/fstab/fstab220f /etc/fstab
-else
-	cp /home/emteq/.resources/fstab/fstab220g /etc/fstab
-fi
+cp /home/emteq/.resources/fstab/$1 /etc/fstab

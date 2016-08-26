@@ -64,16 +64,9 @@ source ./.config.cfg
 
 #update settings
 function cfg_update () {
-#sed -i "s/\($1 *= *\).*/\1\'$2/\'" ./config.cfg
-
 sed -i "s,^\($1=\).*,\1'$2'," .config.cfg
 }
 #system variables
-#c2=$( cat /home/emteq/.c2 ) 
-#econip=$( cat /home/emteq/.econip )
-#econapp=$( cat /home/emteq/.econapp )
-#iso=$( cat /home/emteq/.iso )
-#encoder=$( cat /home/emteq/.encoder )
 res=0
 ver="2.1.0"
 dir=${PWD}/.resources/
@@ -82,10 +75,7 @@ dbdir=${dir}db/
 dbstatic=${dir}/dbstatic/
 confdir=${dir}config/
 resfile="c2/src/presentation/resources/resource.json"
-#for i in 1 2 ; do
-#  dbfiles[$i]=$( head -n $i /home/emteq/.dbfiles | tail -1 )
-#done
-#cnt=1
+
 
 
 #Header - Create stylized screen header
@@ -271,24 +261,24 @@ function isup() {
 
 #Modify software parameters
 function syscon {
-source ./.config.cfg 
-header
-echo "Current Settings:"
-echo -e "1. eConnect IP: "${blue}$econip${white}
-echo -e "2. CWR450 GUI File: "${blue}$c2_450${white} 
-echo -e "3. CWR451 GUI File: "${blue}$c2_451${white}
-echo -e "4. CWR450 Image File: "${blue}$iso_450${white}
-echo -e "5. CWR451 Image File: "${blue}$iso_451${white}
-echo -e "6. CWR450-2000-XX DB: "${blue}$db_450_2000${white}
-echo -e "7. CWR450-5000-XX DB: "${blue}$db_450_5000${white}
-echo -e "8. CWR451-2000-XX DB: "${blue}$db_450_2000${white}
-echo -e "9. CWR451-5000-XX DB: "${blue}$db_450_5000${white}
-echo -e "10. CWR450 Script: "${blue}$scene_450${white}
-echo -e "11. CWR451 Script: "${blue}$scene_451${white}
-echo -e "12. encoder board software: "${blue}$encoder${white}
-echo -e "13. Update System with EMTEQ package: "
-echo ' '
 while : ; do
+  source ./.config.cfg
+  header
+  echo "Current Settings:"
+  echo -e "1. eConnect IP: "${blue}$econip${white}
+  echo -e "2. CWR450 GUI File: "${blue}$c2_450${white} 
+  echo -e "3. CWR451 GUI File: "${blue}$c2_451${white}
+  echo -e "4. CWR450 Image File: "${blue}$iso_450${white}
+  echo -e "5. CWR451 Image File: "${blue}$iso_451${white}
+  echo -e "6. CWR450-2000-XX DB: "${blue}$db_450_2000${white}
+  echo -e "7. CWR450-5000-XX DB: "${blue}$db_450_5000${white}
+  echo -e "8. CWR451-2000-XX DB: "${blue}$db_451_2000${white}
+  echo -e "9. CWR451-5000-XX DB: "${blue}$db_451_5000${white}
+  echo -e "10. CWR450 Script: "${blue}$scene_450${white}
+  echo -e "11. CWR451 Script: "${blue}$scene_451${white}
+  echo -e "12. encoder board software: "${blue}$encoder${white}
+  echo -e "13. Update System with EMTEQ package: "
+  echo ' '
   echo -ne "Please enter item to modify or (${red}x${white}) to exit: "
   read junk
   case $junk in
@@ -297,7 +287,6 @@ while : ; do
       echo -n "Enter new IP address: "
       read econip
       cfg_update econip $econip
-      break
     ;;
     [2-3]) 
       echo " "
@@ -316,9 +305,8 @@ while : ; do
       else
         cfg_update c2_451 $c2
       fi
-      break
     ;;
-    [4-5]) 
+    [4]) 
       echo " "
       cnt=1
       for file in $( ls ${dir}iso/ ) ; do
@@ -332,23 +320,24 @@ while : ; do
       echo -n "Select Image file: "
       read ifile
       iso=${files[$ifile]}
-      fstab=${iso:14:1}
-      ##########AN FTAB NEEDS TO BE CREATED FOR 451##############
-      if [[ $fstab = 'F' ]]; then
-        sudo /root/scripts/ftab F
-      else
-        sudo /root/scripts/ftab
-      fi
-      if [[ $junk = 4 ]]; then
-        echo cfg_update $iso_450
-      else
-        echo cfg_update $iso_451
-      fi
-      echo "Updating image file..."
-      rsync --progress ${dir}iso/${iso} ${dir}iso/econnect-firmware.img
-      break
+      cfg_update iso_450 $iso
     ;;
-    #############################################################
+    [5]) 
+      echo " "
+      cnt=1
+      for file in $( ls ${dir}iso/ ) ; do
+        if [[ $file != 'econnect-firmware.img' ]] && [[ $file != 'firmware' ]]; then
+          echo $cnt "." $file
+          files[$cnt]=$file
+          cnt=$((cnt + 1))
+         fi      
+      done
+      echo " "
+      echo -n "Select Image file: "
+      read ifile
+      iso=${files[$ifile]}
+      cfg_update iso_451 $iso
+    ;;
     [6-9]) 
       echo "Warning - Selecting the wrong file will cause configurations to fail!"
       echo " "
@@ -377,7 +366,6 @@ while : ; do
         8) cfg_update db_451_2000 ${files[$sel]};;
         9) cfg_update db_451_5000 ${files[$sel]};;
       esac
-      break
     ;;
     [1][0-1]) 
       echo " "
@@ -396,7 +384,7 @@ while : ; do
       else
         cfg_update scene_451 $scene_file
       fi
-      break;;
+    ;;
     12) echo ""
       cnt=1
       for file in $( ls ${dir}encoder/ ) ; do
@@ -409,7 +397,7 @@ while : ; do
       read ifile
       encoder=${files[$ifile]}
       echo encoder $encoder
-      break;;   
+    ;;   
     13) header
       echo "Please insert USB key with update file(s)"
       echo -n "Press any key to continue"
@@ -448,9 +436,11 @@ while : ; do
      echo "Update Complete... System will now restart."
      sleep 5
      reboot
-     break;;
+    ;;
     x) break;;   
-    *) echo "Please enter a valid selection: ";;
+    *) echo "Invalid selection: "
+       sleep 2
+    ;;
   esac
 done         
 }
@@ -1060,6 +1050,17 @@ usbkeysel
 if [ $usbselect = "x" ] ; then 
  return
 fi
+#preparing image file
+echo 'Preparing Image File'
+case $type in
+  [1-4])  rsync --progress ${dir}iso/${iso450} ${dir}iso/econnect-firmware.img
+    sudo /root/scripts/ftab ${iso450}.ftab
+  ;;
+  [5-8])  rsync --progress ${dir}iso/${iso451} ${dir}iso/econnect-firmware.img
+  sudo /root/scripts/ftab ${iso451}.ftab
+  ;;
+esac
+
 #mount image
 echo "Mounting Firmware Image."
 mount ${dir}iso/econnect-firmware.img
@@ -1103,7 +1104,7 @@ function build {
 cnt=1
 #create new resource file
 echo -en "{"\\n""\\t"\"default\": ">"$dir"/json/resource.json
-if (( $platform = 1)); then
+if [[ $platform = 1 ]]; then
   case ${languages[1]} in
     1) echo -en "\"en-us\",\n	\"languages\": [ \"en-us\"">>"$dir"/json/resource.json;;
     2) echo -en "\"en-uk\",\n	\"languages\": [ \"en-uk\"">>"$dir"/json/resource.json;;
@@ -1168,39 +1169,43 @@ echo -en "\n}">>"$dir"/json/resource.json
 #copy new resource to GUI.
 header
 echo "Configuring resource files..."
-tar -xzpf ${dir}GUI/$c2  -C /home/emteq
-cp ${dir}json/resource.json /home/emteq/$resfile
-tar -czpf ${dir}payload/temp/$c2 c2/
+case $type in
+[1-4]) 
+  tar -xzpf ${dir}GUI/$c2_450  -C /home/emteq &> /dev/null
+  cp ${dir}json/resource.json /home/emteq/$resfile
+  tar -czpf ${dir}payload/temp/$c2_450 c2/
+  echo "$c2_450" > ${dir}payload/update_LIST_${lot}_Factory.lst
+  ;;
+[5-8])
+ tar -xzpf ${dir}GUI/$c2_451  -C /home/emteq &> /dev/null
+ cp ${dir}json/resource.json /home/emteq/$resfile
+ tar -czpf ${dir}payload/temp/$c2_451 c2/
+ echo "$c2_451" > ${dir}payload/update_LIST_${lot}_Factory.lst
+ ;;
+esac
 rm -rf /home/emteq/c2
 #process database options
 db_config
 #create list file with resources
 cp ${dbstatic}update_DB_factory.sql ${dir}payload/temp/
-echo "update_DB_factory.sql" > ${dir}payload/update_LIST_${lot}_Factory.lst
-echo "$c2" >> ${dir}payload/update_LIST_${lot}_Factory.lst
-echo "update_SCENE_factory.tgz" >> ${dir}payload/update_LIST_${lot}_Factory.lst
+echo "update_DB_factory.sql" >> ${dir}payload/update_LIST_${lot}_Factory.lst
+echo "update_SCENES_factory.tgz" >> ${dir}payload/update_LIST_${lot}_Factory.lst
 #process scene scripts for platform and model
 if [[ $platform = 1 ]]; then
   if [[ $type = [1,2,3,4] ]] ; then
-    cp ${dir}scene/$scene_450 ${dir}payload/temp/update_SCENE_Factory.tgz
+    cp ${dir}scene/$scene_450 ${dir}payload/temp/update_SCENES_factory.tgz
   else
-    cp ${dir}scene/$scene_451 ${dir}payload/temp/update_SCENE_Factory.tgz
+    cp ${dir}scene/$scene_451 ${dir}payload/temp/update_SCENES_factory.tgz
   fi
 else
-  cp ${dir}scene/$scene_451 ${dir}payload/temp/update_SCENE_Factory.tgz #This will be max config
-###I thought I would remove files but decided unused script files are ok
-#  gunzip ${dir}payload/temp/update_SCENE_Factory.tgz 
-#  case $light_package in 
-#      *) #Remove scripts from tarball as required
-#  gzip ${dir}payload/temp/update_SCENE_Factory.tar
-#  mv {dir}payload/temp/update_SCENE_Factory.tar.gz {dir}payload/temp/update_SCENE_Factory.tgz
+  cp ${dir}scene/$scene_451 ${dir}payload/temp/update_SCENES_factory.tgz #This will be max config
 fi
 #If SIP is enabled we need to punch a hole in the firewall. Added script does this at boot
 if [ "$sip" = "y" ]; then
-  gunzip ${dir}payload/temp/update_SCENE_Factory.tgz
-  tar -rf ${dir}payload/temp/update_SCENE_Factory.tar --transform 's,.*/,scenes/,' ${dir}scenes/usb_fix.sh 
-  gzip ${dir}payload/temp/update_SCENE_Factory.tar
-  mv ${dir}payload/temp/update_SCENE_Factory.tar.gz ${dir}payload/temp/update_SCENE_Factory.tgz
+  gunzip ${dir}payload/temp/update_SCENES_factory.tgz
+  tar -rf ${dir}payload/temp/update_SCENES_factory.tar --transform 's,.*/,scenes/,' ${dir}scenes/usb_fix.sh 
+  gzip ${dir}payload/temp/update_SCENES_factory.tar
+  mv ${dir}payload/temp/update_SCENES_factory.tar.gz ${dir}payload/temp/update_SCENES_factory.tgz
 fi
 tar -czpf  ${dir}payload/update_LIST_${lot}_Factory.tgz -C ${dir}payload/temp/ .
 
@@ -1226,7 +1231,7 @@ while [[ $up != "22/tcp open  ssh" ]]; do ### add breakpoint ***
   echo "Connection not found!"
   echo "Check power and connection"
   while [[ $x != "" ]]; do
-  echo -e "Press ${green}ENTER${white} to retry or (${red}x{$white} to cancel:" 
+  echo -e "Press ${green}ENTER${white} to retry or (${red}x${white} to cancel:" 
   read x
   if [[ $x = 'x' ]]; then break; fi
   header
@@ -1299,7 +1304,7 @@ echo ""
 sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "'/mnt/user/upload/update update_LIST_"$lot"_Factory.lst'"
 echo ""
 echo -e "${red}Verifying node is up. Please Wait.${white}"
-sleep 10
+sleep 40
 mode=0
 while [[ $mode = 0 ]] ; do
   isup
@@ -1658,7 +1663,9 @@ while : ; do
           echo -n "Press any key to configure boot options: "
           sys_config
         fi;;
-      5) syscon;;
+      5) source ./.config.cfg 
+        syscon
+        source ./.config.cfg;;
       6) firefox 10.0.9.1;;
       7) sendconfig ;;
       8) encoder_update;;
