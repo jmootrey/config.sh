@@ -1612,16 +1612,16 @@ while : ; do
   echo "4. eConnect System Test"
   echo "5. Software Preferences"
   echo "6. Test GUI Interface"
-  echo "7. Transmit configuration data to BE Aerospace"
-  echo "8. Update encoder board"
+#  echo "7. Transmit configuration data to BE Aerospace"
+  echo "7. Update encoder board"
   echo ""
-  if [ $config_file_cnt -gt 5 ] ; then
-    echo -e ${red}$config_file_cnt${white} "configuration files awaiting transmission to BE Aerospace."
-    echo "Please ensure system has active internet connection and select option 5."
-  else
-    echo -e ${green}$config_file_cnt${white} "configuration file(s) awaiting transmission to BE Aerospace."
-    echo " "
-  fi
+#  if [ $config_file_cnt -gt 5 ] ; then
+#    echo -e ${red}$config_file_cnt${white} "configuration files awaiting transmission to BE Aerospace."
+#    echo "Please ensure system has active internet connection and select option 5."
+#  else
+#    echo -e ${green}$config_file_cnt${white} "configuration file(s) awaiting transmission to BE Aerospace."
+#    echo " "
+#  fi
     echo -n "Please enter selection: "
     read junk
     case $junk in
@@ -1667,8 +1667,8 @@ while : ; do
         syscon
         source ./.config.cfg;;
       6) firefox 10.0.9.1;;
-      7) sendconfig ;;
-      8) encoder_update;;
+ #     7) sendconfig ;;
+      7) encoder_update;;
       *) echo "Invalid Entry"
          echo -n "Please enter selection: ";;
     esac

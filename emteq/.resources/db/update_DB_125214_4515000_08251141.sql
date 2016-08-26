@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.5.47, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.16  Distrib 10.1.16-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: econnect
+-- Host: 10.0.9.2    Database: econnect
 -- ------------------------------------------------------
--- Server version	5.5.47-0ubuntu0.14.04.1
+-- Server version	5.6.24
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -36,6 +36,7 @@ CREATE TABLE `alto_amp_config` (
 
 LOCK TABLES `alto_amp_config` WRITE;
 /*!40000 ALTER TABLE `alto_amp_config` DISABLE KEYS */;
+INSERT INTO `alto_amp_config` VALUES (1,1,2);
 /*!40000 ALTER TABLE `alto_amp_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -60,6 +61,7 @@ CREATE TABLE `alto_amp_inputs` (
 
 LOCK TABLES `alto_amp_inputs` WRITE;
 /*!40000 ALTER TABLE `alto_amp_inputs` DISABLE KEYS */;
+INSERT INTO `alto_amp_inputs` VALUES (1,1,0),(2,2,1),(3,3,2),(4,4,3);
 /*!40000 ALTER TABLE `alto_amp_inputs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -88,7 +90,39 @@ CREATE TABLE `alto_amp_outputs` (
 
 LOCK TABLES `alto_amp_outputs` WRITE;
 /*!40000 ALTER TABLE `alto_amp_outputs` DISABLE KEYS */;
+INSERT INTO `alto_amp_outputs` VALUES (1,1,0,50,0,11,6),(2,2,0,50,0,11,6),(3,3,0,50,0,11,6),(4,4,0,50,0,11,6),(5,0,1,2,0,9,6);
 /*!40000 ALTER TABLE `alto_amp_outputs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `arinc_628_config`
+--
+
+DROP TABLE IF EXISTS `arinc_628_config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `arinc_628_config` (
+  `arinc_id` smallint(5) unsigned NOT NULL,
+  `ecms_id` tinyint(3) unsigned NOT NULL,
+  `lru_name` varchar(45) DEFAULT NULL,
+  `value_id` smallint(5) unsigned NOT NULL,
+  `lru_id` smallint(5) unsigned NOT NULL,
+  `seat_name` varchar(45) DEFAULT NULL,
+  `seat_col` tinyint(3) unsigned NOT NULL,
+  `seat_row` tinyint(3) unsigned NOT NULL,
+  `if_bus` tinyint(3) unsigned NOT NULL,
+  `input_type` tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (`arinc_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `arinc_628_config`
+--
+
+LOCK TABLES `arinc_628_config` WRITE;
+/*!40000 ALTER TABLE `arinc_628_config` DISABLE KEYS */;
+/*!40000 ALTER TABLE `arinc_628_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -139,6 +173,7 @@ CREATE TABLE `avds_connections` (
 
 LOCK TABLES `avds_connections` WRITE;
 /*!40000 ALTER TABLE `avds_connections` DISABLE KEYS */;
+INSERT INTO `avds_connections` VALUES (1,1,1,1);
 /*!40000 ALTER TABLE `avds_connections` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -193,6 +228,7 @@ CREATE TABLE `avds_installed` (
 
 LOCK TABLES `avds_installed` WRITE;
 /*!40000 ALTER TABLE `avds_installed` DISABLE KEYS */;
+INSERT INTO `avds_installed` VALUES (1,'0.0.0.0',-1,0);
 /*!40000 ALTER TABLE `avds_installed` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -223,6 +259,7 @@ CREATE TABLE `avds_outputs` (
 
 LOCK TABLES `avds_outputs` WRITE;
 /*!40000 ALTER TABLE `avds_outputs` DISABLE KEYS */;
+INSERT INTO `avds_outputs` VALUES (1,1,'COTS Monitor',3,-1,75,0,0,0);
 /*!40000 ALTER TABLE `avds_outputs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -444,6 +481,7 @@ CREATE TABLE `can_config` (
 
 LOCK TABLES `can_config` WRITE;
 /*!40000 ALTER TABLE `can_config` DISABLE KEYS */;
+INSERT INTO `can_config` VALUES (1,1000000);
 /*!40000 ALTER TABLE `can_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -463,6 +501,7 @@ CREATE TABLE `econnect_config` (
   `lru_type` tinyint(3) unsigned NOT NULL,
   `status` tinyint(3) unsigned NOT NULL,
   `lru_state` tinyint(3) unsigned NOT NULL,
+  `ether_port_flag` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ecms_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -473,7 +512,7 @@ CREATE TABLE `econnect_config` (
 
 LOCK TABLES `econnect_config` WRITE;
 /*!40000 ALTER TABLE `econnect_config` DISABLE KEYS */;
-INSERT INTO `econnect_config` VALUES (1,1,'10.0.9.2','00:00:50:89:d4:fa',1,1,1,1),(2,1,'10.0.9.1',' ',1,1,0,0);
+INSERT INTO `econnect_config` VALUES (1,1,'10.0.9.2','00:0e:8e:64:86:ce',1,1,1,1,0);
 /*!40000 ALTER TABLE `econnect_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -530,7 +569,7 @@ CREATE TABLE `fms_config` (
 
 LOCK TABLES `fms_config` WRITE;
 /*!40000 ALTER TABLE `fms_config` DISABLE KEYS */;
-INSERT INTO `fms_config` VALUES (1,0,2,2,3,3,5);
+INSERT INTO `fms_config` VALUES (1,0,2,0,3,0,3);
 /*!40000 ALTER TABLE `fms_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -558,57 +597,9 @@ CREATE TABLE `fms_data` (
 
 LOCK TABLES `fms_data` WRITE;
 /*!40000 ALTER TABLE `fms_data` DISABLE KEYS */;
-INSERT INTO `fms_data` VALUES (24,NULL,'252','Time to Destination','Minutes',''),(23,NULL,'251','Distance to Destination','Nautical Miles',''),(22,20,'260','Date','dd/mm/yy',''),(25,21,'74','Flight Plan Records','Count',''),(26,22,'371','Equiptment Info','Text',''),(21,10,'320','Magnetic Heading','Degrees','295'),(16,15,'352','Time to Destination','Minutes',''),(15,14,'351','Distance to Destination','Nautical Miles',''),(14,13,'213','Air Temperature','Deg C',''),(13,12,'316','Wind Direction','Degrees',''),(12,11,'315','Wind Speed','Knots',''),(10,9,'313','Track Angle','Degrees',''),(9,8,'312','Ground Speed','Knots',''),(8,7,'311','Longitude','Degrees','-121.88'),(7,6,'310','Latitude','Degrees','46.1142'),(5,4,'210','Airspeed','Knots',''),(4,3,'205','Mach','Mach',''),(3,2,'204','Altitude - Corrected','Feet',''),(2,NULL,'203','Altitude','Feet',''),(1,1,'150','GMT','hh:mm:ss','');
+INSERT INTO `fms_data` VALUES (1,1,'150','GMT','hh:mm:ss',''),(2,2,'203','Altitude','Feet',''),(3,2,'204','Altitude - Corrected','Feet',''),(4,3,'205','Mach','Mach',''),(27,23,'353','Destination GMT offset','+/-hh:mm:ss',''),(5,4,'210','Airspeed','Knots',''),(6,5,'212','Vertical Speed','Feet/Min',''),(7,6,'310','Latitude','Degrees',''),(8,7,'311','Longitude','Degrees',''),(9,8,'312','Ground Speed','Knots',''),(10,9,'313','Track Angle','Degrees',''),(11,10,'314','True Heading','Degrees',' '),(12,11,'315','Wind Speed','Knots',''),(13,12,'316','Wind Direction','Degrees',''),(14,13,'213','Air temperature','Deg C',''),(15,14,'351','Distance to Destination','Nautical Miles',''),(16,15,'352','Time to Destination','Minutes',''),(17,16,'361','Origin Airport - part 1','Code',''),(18,17,'362','Origin Airport - part 2','Code',''),(20,19,'364','Destination Airport - part 2','Code',''),(19,18,'365','Destination Airport - part 1','Code',''),(21,10,'320','Magnetic Heading','Degrees',''),(26,22,'371','Equiptment Info','Text',''),(25,21,'074','Flight Plan Records','Count',''),(22,20,'260','Date','dd/mm/yy',''),(23,14,'251','Distance to Destination','Nautical Miles',''),(24,15,'252','Time to Destination','Minutes',''),(28,40,'275','Cabin ECS Cntl','boolean',''),(30,42,'272','Actual Cabin Zone Temperature','Kelvin',''),(31,43,'275','Cabin Vent Fan Speed','Count (0 - 7)',''),(32,44,'271','Commanded Cabin Zone Temperature','Kelvin',''),(34,46,'61','Origin and Destination 1','Code',''),(35,47,'62','Origin and Destination 2','Code',''),(36,48,'63','Origin and Destination 3','Code',''),(37,49,'275','Aircraft WOW','boolean',''),(29,41,'275','Cabin Lighting Control','boolean','');
 /*!40000 ALTER TABLE `fms_data` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = '' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `fms_data_BUPD` BEFORE UPDATE ON `fms_data` FOR EACH ROW begin
-if new.arinc_label=311 AND new.value < 0 then
-  set new.value=-180-new.value;
-end if;
-IF new.arinc_label=310 AND new.value  < 0 THEN
-  set new.value=-180-new.value;
-end if;
-IF new.arinc_label=320 AND new.value < 0 THEN
- set new.value=round(180-new.value);
-end if;
-IF new.arinc_label=320 THEN
-  set new.value=round(new.value);
-end if;
-If new.arinc_label=320 AND new.value = 0 THEN
-  if old.value > 170 AND old.value < 190 THEN
-    set new.value = 180;
-  end if;
-end if;
-IF new.arinc_label=316 AND new.value < 0 THEN
-  set new.value=round(180-new.value);
-end if;
-IF new.arinc_label=316 THEN
-  set new.value=round(new.value);
-end if;
-IF new.arinc_label=213 AND new.value < 0 THEN
-  set new.value=round(-1 * ( new.value + 512 ));
-end if;
-IF new.arinc_label=213 AND new.value > 0 THEN
-  set new.value=round(new.value);
-end if;
-if new.arinc_label=316 OR new.arinc_label=313 OR new.arinc_label=312 OR new.arinc_label=210 THEN
-  set new.value=round(new.value);
-end if;
-end */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `fms_flight_plan`
@@ -637,28 +628,6 @@ LOCK TABLES `fms_flight_plan` WRITE;
 /*!40000 ALTER TABLE `fms_flight_plan` DISABLE KEYS */;
 /*!40000 ALTER TABLE `fms_flight_plan` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = '' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `fms_flight_plan_BINS` BEFORE INSERT ON `fms_flight_plan` FOR EACH ROW begin
-IF new.longitude<0 THEN
-  SET new.longitude=-180-new.longitude;
-  end if;
-IF new.latitude<0 THEN
-  SET new.latitude=-180-new.latitude;
-  end if;
-end */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `ife_remote`
@@ -804,6 +773,7 @@ CREATE TABLE `lighting_io_config` (
 
 LOCK TABLES `lighting_io_config` WRITE;
 /*!40000 ALTER TABLE `lighting_io_config` DISABLE KEYS */;
+INSERT INTO `lighting_io_config` VALUES (4,1,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,4,-1),(3,1,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,3,-1),(2,1,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,2,-1),(1,1,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1),(5,2,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(6,3,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1);
 /*!40000 ALTER TABLE `lighting_io_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -863,6 +833,7 @@ CREATE TABLE `lighting_io_installed` (
 
 LOCK TABLES `lighting_io_installed` WRITE;
 /*!40000 ALTER TABLE `lighting_io_installed` DISABLE KEYS */;
+INSERT INTO `lighting_io_installed` VALUES (2,1,253,'ESP',6,80,-1,0,0),(1,1,254,'SPN',4,64,-1,0,0),(3,1,252,'LSP',6,64,-1,0,0);
 /*!40000 ALTER TABLE `lighting_io_installed` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -895,6 +866,7 @@ CREATE TABLE `lighting_io_modes` (
 
 LOCK TABLES `lighting_io_modes` WRITE;
 /*!40000 ALTER TABLE `lighting_io_modes` DISABLE KEYS */;
+INSERT INTO `lighting_io_modes` VALUES (1,1,0,'on',1,1,0,0,0,0,0),(2,1,0,'on',3,1,0,0,0,0,0),(3,1,0,'on',5,1,0,0,0,0,0),(4,1,0,'on',7,1,0,0,0,0,0),(5,2,0,'off',1,0,0,0,0,0,0),(6,2,0,'off',3,0,0,0,0,0,0),(7,2,0,'off',5,0,0,0,0,0,0),(8,2,0,'off',7,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `lighting_io_modes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -974,6 +946,7 @@ CREATE TABLE `lighting_io_settings` (
 
 LOCK TABLES `lighting_io_settings` WRITE;
 /*!40000 ALTER TABLE `lighting_io_settings` DISABLE KEYS */;
+INSERT INTO `lighting_io_settings` VALUES (5,5,4,7,4,'ENV',64,0,0,'TEMP DOWN',0,1,1,0,'Temp UP',0,1,0,0,'Fan Down',0,1,0,0,'Fan UP',0,1,0,0,'',-1,-1,-1,-1),(4,4,2,6,0,'SHADE4',0,0,1,'',0,0,0,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1),(3,3,2,6,0,'SHADE3',0,0,1,'',0,0,0,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1),(2,2,2,6,0,'SHADE2',0,0,1,'',0,0,0,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1),(1,1,2,6,0,'SHADE1',0,0,1,'',0,0,0,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1),(6,6,4,1,4,'Cabin Lights',5,0,0,'ENTRY',0,1,1,0,'Cabin',0,1,0,0,'Accent',0,1,0,0,'Night',0,1,0,0,'-1',-1,-1,-1,-1);
 /*!40000 ALTER TABLE `lighting_io_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1065,7 +1038,7 @@ CREATE TABLE `local_video` (
 
 LOCK TABLES `local_video` WRITE;
 /*!40000 ALTER TABLE `local_video` DISABLE KEYS */;
-INSERT INTO `local_video` VALUES (65537,1,'test','/mnt/user/local/test.mov',1,1);
+INSERT INTO `local_video` VALUES (65537,1,'test_720','/mnt/user/local/test_720.mov',1,1),(65538,1,'test','/mnt/user/local/test.mov',1,1),(65539,1,'test_1080','/mnt/user/local/test_1080.mov',1,1),(65540,1,'test_720','/mnt/user/local/test_720.avi',1,0),(65541,1,'test_1080','/mnt/user/local/test_1080.avi',1,0);
 /*!40000 ALTER TABLE `local_video` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1123,7 +1096,7 @@ CREATE TABLE `media_status` (
 
 LOCK TABLES `media_status` WRITE;
 /*!40000 ALTER TABLE `media_status` DISABLE KEYS */;
-INSERT INTO `media_status` VALUES (1,0,0,0,1,14,2,0,0),(2,0,0,0,0,0,0,0,0);
+INSERT INTO `media_status` VALUES (1,0,0,0,5,12,6,0,0),(2,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `media_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1152,7 +1125,7 @@ CREATE TABLE `net_displays` (
 
 LOCK TABLES `net_displays` WRITE;
 /*!40000 ALTER TABLE `net_displays` DISABLE KEYS */;
-INSERT INTO `net_displays` VALUES ('10.0.9.198',0,90,50,'DSK_201212 0.1.15',41,'');
+INSERT INTO `net_displays` VALUES ('10.0.9.101',2,83,60,'DSK_201212 0.2.4',47,''),('10.0.9.104',5,83,60,'DSK_201212 0.2.4',45,''),('10.0.9.103',4,83,60,'DSK_201212 0.2.4',48,''),('10.0.9.102',3,83,60,'DSK_201212 0.2.4',47,''),('10.0.9.100',1,83,60,'DSK_201212 0.2.4',48,'');
 /*!40000 ALTER TABLE `net_displays` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1178,6 +1151,58 @@ CREATE TABLE `net_upgrades` (
 LOCK TABLES `net_upgrades` WRITE;
 /*!40000 ALTER TABLE `net_upgrades` DISABLE KEYS */;
 /*!40000 ALTER TABLE `net_upgrades` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pcc_config`
+--
+
+DROP TABLE IF EXISTS `pcc_config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pcc_config` (
+  `ecms_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `receiver1_config` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `receiver2_config` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `transmit1_config` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `transmit2_config` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ecms_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pcc_config`
+--
+
+LOCK TABLES `pcc_config` WRITE;
+/*!40000 ALTER TABLE `pcc_config` DISABLE KEYS */;
+INSERT INTO `pcc_config` VALUES (1,0,0,0,0);
+/*!40000 ALTER TABLE `pcc_config` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pcc_status`
+--
+
+DROP TABLE IF EXISTS `pcc_status`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pcc_status` (
+  `ecms_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `system_set_temp` double(11,1) NOT NULL DEFAULT '20.0',
+  `requested_set_temp` double(11,1) NOT NULL DEFAULT '20.0',
+  PRIMARY KEY (`ecms_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pcc_status`
+--
+
+LOCK TABLES `pcc_status` WRITE;
+/*!40000 ALTER TABLE `pcc_status` DISABLE KEYS */;
+INSERT INTO `pcc_status` VALUES (1,20.0,20.0);
+/*!40000 ALTER TABLE `pcc_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1261,7 +1286,7 @@ CREATE TABLE `rs485_config` (
 
 LOCK TABLES `rs485_config` WRITE;
 /*!40000 ALTER TABLE `rs485_config` DISABLE KEYS */;
-INSERT INTO `rs485_config` VALUES (1,1,1,0,9600,0,8,2,2,0);
+INSERT INTO `rs485_config` VALUES (4,3,1,0,9600,0,8,2,0,0),(1,4,1,0,38400,1,8,1,0,0),(3,1,1,0,115200,0,8,1,0,1),(5,2,1,0,115200,0,8,1,0,2);
 /*!40000 ALTER TABLE `rs485_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1292,6 +1317,7 @@ CREATE TABLE `scene_scripts` (
 
 LOCK TABLES `scene_scripts` WRITE;
 /*!40000 ALTER TABLE `scene_scripts` DISABLE KEYS */;
+INSERT INTO `scene_scripts` VALUES (65537,1,23,'/opt/scenes/c2ver.sh','',0,0,1,0),(65538,1,31,'/opt/scenes/ss_recover.sh','',1,0,1,0),(65539,1,20,'/opt/scenes/mmap_update.sh','',1,0,1,0),(65540,1,22,'/opt/scenes/usb_fix.sh','',0,0,1,0),(65541,1,30,'/opt/scenes/watchnd.sh','',1,0,1,0);
 /*!40000 ALTER TABLE `scene_scripts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1350,7 +1376,7 @@ CREATE TABLE `sensor_status` (
 
 LOCK TABLES `sensor_status` WRITE;
 /*!40000 ALTER TABLE `sensor_status` DISABLE KEYS */;
-INSERT INTO `sensor_status` VALUES (1,43.5,-20,85,42.687,-20,85,42.5,-20,85,40,-20,85,40,-20,85,1.2,1.1645,1.2248,1.77,1.7468,1.8372,2.48724,2.3649,2.6027,3.312359,3.1861,3.4646,4.982517,4.7651,5.2127,12.821392,12.2695,13.7749,27.115,19.2151,32.6656);
+INSERT INTO `sensor_status` VALUES (1,47.75,-20,85,45.25,-20,85,0,-20,85,47,-20,105,45,-20,105,1.2,1.1645,1.2248,1.83,1.7468,1.8372,2.52672,2.3649,2.6027,3.347043,3.1861,3.4646,4.956294,4.7651,5.2127,12.896371,12.2695,13.7749,27.434,19.2151,32.6656);
 /*!40000 ALTER TABLE `sensor_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1376,7 +1402,133 @@ CREATE TABLE `slave_mounts` (
 
 LOCK TABLES `slave_mounts` WRITE;
 /*!40000 ALTER TABLE `slave_mounts` DISABLE KEYS */;
+INSERT INTO `slave_mounts` VALUES (1,'10.0.9.100','/mnt/user/local','/mnt/user/slaves/10.0.9.100_local');
 /*!40000 ALTER TABLE `slave_mounts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `spn03_config`
+--
+
+DROP TABLE IF EXISTS `spn03_config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `spn03_config` (
+  `rec_num` int(10) unsigned NOT NULL,
+  `ecms_id` tinyint(3) unsigned NOT NULL,
+  `lru_id` smallint(5) unsigned NOT NULL,
+  `value_id` smallint(5) unsigned NOT NULL,
+  `lru_name` varchar(255) NOT NULL,
+  `control_mask` tinyint(3) unsigned NOT NULL,
+  `group_mask` int(10) unsigned NOT NULL,
+  `align_delay` tinyint(3) unsigned NOT NULL,
+  `lower_bound` smallint(5) unsigned NOT NULL,
+  `upper_bound` smallint(5) unsigned NOT NULL,
+  `value_min` int(11) NOT NULL,
+  `value_max` int(11) NOT NULL,
+  `power_on_delay` smallint(5) unsigned NOT NULL,
+  `comloss_timeout` smallint(5) unsigned NOT NULL,
+  `comloss_frame` tinyint(3) unsigned NOT NULL,
+  `active_type` tinyint(3) unsigned NOT NULL,
+  `debounce_period` smallint(5) unsigned NOT NULL,
+  `bit_length` tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (`rec_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `spn03_config`
+--
+
+LOCK TABLES `spn03_config` WRITE;
+/*!40000 ALTER TABLE `spn03_config` DISABLE KEYS */;
+INSERT INTO `spn03_config` VALUES (1,1,4,100,'GPI0',1,1,1,0,1,0,1,1,1,1,0,100,8),(2,1,5,100,'GPI0',1,1,1,0,1,0,1,1,1,1,0,100,16);
+/*!40000 ALTER TABLE `spn03_config` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `spn03_econapp_actions`
+--
+
+DROP TABLE IF EXISTS `spn03_econapp_actions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `spn03_econapp_actions` (
+  `rec_num` int(10) unsigned NOT NULL,
+  `ecms_id` tinyint(3) unsigned NOT NULL,
+  `lru_id` smallint(5) unsigned NOT NULL,
+  `gpi_mask` int(10) unsigned NOT NULL,
+  `compare_id` int(10) unsigned NOT NULL,
+  `cur_value` int(11) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  PRIMARY KEY (`rec_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `spn03_econapp_actions`
+--
+
+LOCK TABLES `spn03_econapp_actions` WRITE;
+/*!40000 ALTER TABLE `spn03_econapp_actions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `spn03_econapp_actions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `spn03_status`
+--
+
+DROP TABLE IF EXISTS `spn03_status`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `spn03_status` (
+  `lru_id` smallint(5) unsigned NOT NULL,
+  `value_id` smallint(5) unsigned NOT NULL,
+  `ecms_id` tinyint(3) unsigned NOT NULL,
+  `report_state` int(11) NOT NULL,
+  `value_gui` int(11) NOT NULL,
+  `valid` tinyint(3) unsigned NOT NULL,
+  `value_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`lru_id`,`value_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `spn03_status`
+--
+
+LOCK TABLES `spn03_status` WRITE;
+/*!40000 ALTER TABLE `spn03_status` DISABLE KEYS */;
+/*!40000 ALTER TABLE `spn03_status` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `spn03_versions`
+--
+
+DROP TABLE IF EXISTS `spn03_versions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `spn03_versions` (
+  `lru_id` smallint(5) unsigned NOT NULL,
+  `ecms_id` tinyint(3) unsigned NOT NULL,
+  `firm_yy` tinyint(3) unsigned NOT NULL,
+  `firm_mm` tinyint(3) unsigned NOT NULL,
+  `firm_dd` tinyint(3) unsigned NOT NULL,
+  `bl_yy` tinyint(3) unsigned NOT NULL,
+  `bl_mm` tinyint(3) unsigned NOT NULL,
+  `bl_dd` tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (`lru_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `spn03_versions`
+--
+
+LOCK TABLES `spn03_versions` WRITE;
+/*!40000 ALTER TABLE `spn03_versions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `spn03_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1434,6 +1586,7 @@ CREATE TABLE `spn_input_status` (
 
 LOCK TABLES `spn_input_status` WRITE;
 /*!40000 ALTER TABLE `spn_input_status` DISABLE KEYS */;
+INSERT INTO `spn_input_status` VALUES (1,1,0,128,128,128);
 /*!40000 ALTER TABLE `spn_input_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1518,7 +1671,35 @@ CREATE TABLE `spn_versions` (
 
 LOCK TABLES `spn_versions` WRITE;
 /*!40000 ALTER TABLE `spn_versions` DISABLE KEYS */;
+INSERT INTO `spn_versions` VALUES (1,0,0,0,0,0);
 /*!40000 ALTER TABLE `spn_versions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `system_actions`
+--
+
+DROP TABLE IF EXISTS `system_actions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `system_actions` (
+  `rec_num` int(10) unsigned NOT NULL,
+  `action_id` int(10) unsigned NOT NULL,
+  `icd_code` tinyint(3) unsigned NOT NULL,
+  `icd_ecmsid` tinyint(3) unsigned NOT NULL,
+  `icd_args` varchar(255) NOT NULL,
+  `action_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`rec_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `system_actions`
+--
+
+LOCK TABLES `system_actions` WRITE;
+/*!40000 ALTER TABLE `system_actions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `system_actions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1547,8 +1728,34 @@ CREATE TABLE `system_av_status` (
 
 LOCK TABLES `system_av_status` WRITE;
 /*!40000 ALTER TABLE `system_av_status` DISABLE KEYS */;
-INSERT INTO `system_av_status` VALUES (1,0,2,0,0,0,1,100),(2,0,0,0,0,0,0,0);
+INSERT INTO `system_av_status` VALUES (1,0,50,0,0,0,1,100),(2,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `system_av_status` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `system_compare`
+--
+
+DROP TABLE IF EXISTS `system_compare`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `system_compare` (
+  `rec_num` int(10) unsigned NOT NULL,
+  `compare_id` int(10) unsigned NOT NULL,
+  `match_value` int(11) NOT NULL,
+  `action_id` int(10) unsigned NOT NULL,
+  `description` varchar(255) NOT NULL,
+  PRIMARY KEY (`rec_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `system_compare`
+--
+
+LOCK TABLES `system_compare` WRITE;
+/*!40000 ALTER TABLE `system_compare` DISABLE KEYS */;
+/*!40000 ALTER TABLE `system_compare` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1574,10 +1781,12 @@ CREATE TABLE `system_config` (
   `light_controller` tinyint(3) unsigned NOT NULL,
   `esp_controller` tinyint(3) unsigned NOT NULL,
   `spn_controller` tinyint(3) unsigned NOT NULL,
+  `spn03_controller` tinyint(3) unsigned NOT NULL,
   `display_devices` tinyint(3) unsigned NOT NULL,
   `alto_amp` tinyint(3) unsigned NOT NULL,
   `seat_audio` tinyint(3) unsigned NOT NULL,
   `air_cell` tinyint(3) unsigned NOT NULL,
+  `pcc` tinyint(3) NOT NULL DEFAULT '0',
   PRIMARY KEY (`ecms_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1588,7 +1797,7 @@ CREATE TABLE `system_config` (
 
 LOCK TABLES `system_config` WRITE;
 /*!40000 ALTER TABLE `system_config` DISABLE KEYS */;
-INSERT INTO `system_config` VALUES (1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0),(2,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0);
+INSERT INTO `system_config` VALUES (1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,0,1,1,1,0,0);
 /*!40000 ALTER TABLE `system_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1643,7 +1852,7 @@ CREATE TABLE `system_status_flags` (
 
 LOCK TABLES `system_status_flags` WRITE;
 /*!40000 ALTER TABLE `system_status_flags` DISABLE KEYS */;
-INSERT INTO `system_status_flags` VALUES (1,0,0,0,0,0,0,0,0),(2,0,0,0,0,0,0,0,0);
+INSERT INTO `system_status_flags` VALUES (1,0,0,0,1,0,0,0,0),(2,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `system_status_flags` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1671,7 +1880,7 @@ CREATE TABLE `system_upgrades` (
 
 LOCK TABLES `system_upgrades` WRITE;
 /*!40000 ALTER TABLE `system_upgrades` DISABLE KEYS */;
-INSERT INTO `system_upgrades` VALUES (1,'update_ECONAPP_','.tgz','/opt/eConnect','ssd-optfs',1),(2,'update_DB_','.sql','database','',3),(3,'update_QUALTEST_','.tgz','/opt/board_tests','ssd-optfs',1),(4,'update_C2_','.tgz','/opt/c2','ssd-optfs',1),(5,'update_AVIOIP_','.tgz','/opt/avioip','ssd-optfs',1),(6,'update_FPGA_','.bin','fpga','',1),(7,'update_IOBOARD_','.bin','ioboard','',3),(8,'update_ECONNECT_','.sh','/mnt/user/local','',3),(9,'update_LIST_','.lst','/opt','ssd-optfs',3),(10,'update_SCENES_','.tgz','/opt/scenes','ssd-optfs',3),(11,'update_TILESTREAM_','.tgz','/opt/tilestream','ssd-optfs',1),(12,'update_SPN_','.bin','spn','',3),(13,'update_MMAP_','.tgz','/mnt/mmap','ssd-mmap',1),(14,'update_TSAPP_','.tgz','/opt/tsApp','ssd-optfs',2),(15,'update_TSIMAGES_','.tgz','/opt/Images','ssd-optfs',2),(16,'update_TSTESTAPPS_','.tgz','/opt/testapps','ssd-optfs',2),(17,'update_TSECONAPP_','.tgz','/opt/eConnect','ssd-optfs',2),(18,'update_TSC2_','.tgz','/opt/c2','ssd-optfs',2),(19,'update_CWRTSAPP','.tgz','/opt/tsApp','ssd-optfs',1);
+INSERT INTO `system_upgrades` VALUES (1,'update_ECONAPP_','.tgz','/opt/eConnect','ssd-optfs',1),(2,'update_DB_','.sql','database','',3),(3,'update_QUALTEST_','.tgz','/opt/board_tests','ssd-optfs',1),(4,'update_C2_','.tgz','/opt/c2','ssd-optfs',1),(5,'update_AVIOIP_','.tgz','/opt/avioip','ssd-optfs',1),(6,'update_FPGA_','.bin','fpga','',1),(7,'update_IOBOARD_','.bin','ioboard','',3),(8,'update_ECONNECT_','.sh','/mnt/user/local','',3),(9,'update_LIST_','.lst','/opt','ssd-optfs',3),(10,'update_SCENES_','.tgz','/opt/scenes','ssd-optfs',3),(11,'update_TILESTREAM_','.tgz','/opt/tilestream','ssd-optfs',1),(12,'update_SPN_','.bin','spn','',3),(13,'update_MMAP_','.tgz','/mnt/mmap','ssd-mmap',1),(14,'update_TSAPP_','.tgz','/opt/tsApp','ssd-optfs',2),(15,'update_TSIMAGES_','.tgz','/opt/Images','ssd-optfs',2),(16,'update_TSTESTAPPS_','.tgz','/opt/testapps','ssd-optfs',2),(17,'update_TSECONAPP_','.tgz','/opt/eConnect','ssd-optfs',2),(18,'update_TSC2_','.tgz','/opt/c2','ssd-optfs',2),(19,'update_CWRTSAPP','.tgz','/opt/tsApp','ssd-optfs',1),(20,'update_SPN03_','.bin','spn03','',3);
 /*!40000 ALTER TABLE `system_upgrades` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1690,8 +1899,8 @@ CREATE TABLE `system_versions` (
   `db_ver_customer` int(10) unsigned NOT NULL,
   `ecms_major` tinyint(3) unsigned NOT NULL,
   `ecms_minor` tinyint(3) unsigned NOT NULL,
-  `web_app_major` int(10) unsigned NOT NULL,
-  `web_app_minor` int(10) unsigned NOT NULL,
+  `web_app_major` tinyint(3) unsigned NOT NULL,
+  `web_app_minor` tinyint(3) unsigned NOT NULL,
   `web_customer_major` int(10) unsigned NOT NULL,
   `web_customer_minor` int(10) unsigned NOT NULL,
   `fpga_ver` varchar(32) NOT NULL,
@@ -1715,7 +1924,7 @@ CREATE TABLE `system_versions` (
 
 LOCK TABLES `system_versions` WRITE;
 /*!40000 ALTER TABLE `system_versions` DISABLE KEYS */;
-INSERT INTO `system_versions` VALUES (1,1,0,0,'20160503',0,55,20160503,1142,0,0,'14/5/29.1',0,0,'201502261114','201501141852',6,0,0,2,24,'0.2.3'),(2,1,0,0,'20160503',0,54,2,0,7,0,' ',0,0,20160503,1142,0,0,0,2,3,'0.2.3');
+INSERT INTO `system_versions` VALUES (1,3,0,0,0,1,0,0,0,20160527,0,'2016/3/28.1',0,0,'201603211333','201603031426',6,0,0,3,0,'1.0.0'),(2,3,0,0,0,0,58,2,0,20160527,0,' ',0,0,'201502271212','201501271338',0,0,0,2,7,'0.2.6');
 /*!40000 ALTER TABLE `system_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1833,6 +2042,7 @@ CREATE TABLE `usb_update_files` (
 
 LOCK TABLES `usb_update_files` WRITE;
 /*!40000 ALTER TABLE `usb_update_files` DISABLE KEYS */;
+INSERT INTO `usb_update_files` VALUES (65537,1,'/mnt/user/upload/update_DB_XMALT_CWR451.sql'),(65538,1,'/mnt/user/upload/update_C2_rel_PILATUS_201605031153.tgz'),(65539,1,'/mnt/user/upload/update_DB_CWR451DVT.sql'),(65540,1,'/mnt/user/upload/update_C2_rel_HONDA_20160225-2.tgz'),(65541,1,'/mnt/user/upload/update_DB_PC12_451_test.sql'),(65542,1,'/mnt/user/upload/update_DB_multi_master_ver.sql'),(65543,1,'/mnt/user/upload/update_LIST_4512000_Factory.lst');
 /*!40000 ALTER TABLE `usb_update_files` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1857,7 +2067,7 @@ CREATE TABLE `usb_update_status` (
 
 LOCK TABLES `usb_update_status` WRITE;
 /*!40000 ALTER TABLE `usb_update_status` DISABLE KEYS */;
-INSERT INTO `usb_update_status` VALUES (1,0,0),(2,0,0);
+INSERT INTO `usb_update_status` VALUES (1,0,7),(2,0,0);
 /*!40000 ALTER TABLE `usb_update_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1912,7 +2122,7 @@ CREATE TABLE `user_audio` (
 
 LOCK TABLES `user_audio` WRITE;
 /*!40000 ALTER TABLE `user_audio` DISABLE KEYS */;
-INSERT INTO `user_audio` VALUES (65537,1,'07 - High Rez','/mnt/user/upload/07 - High Rez.mp3',1,1),(65538,1,'03 - Television Rules the Nation _ Crescendolls','/mnt/user/upload/03 - Television Rules the Nation _ Crescendolls.mp3',1,1),(65539,1,'08 - Predatory Instincts','/mnt/user/upload/08 - Predatory Instincts.mp3',1,1),(65540,1,'Dubstep_100hits','/mnt/user/upload/Dubstep_100hits.mp3',1,1),(65541,1,'02 - Kinetik','/mnt/user/upload/02 - Kinetik.mp3',1,1),(65542,1,'04 - Too Long _ Steam Machine','/mnt/user/upload/04 - Too Long _ Steam Machine.mp3',1,1),(65543,1,'01 - Cryogenic Dreams','/mnt/user/upload/01 - Cryogenic Dreams.mp3',1,1),(65544,1,'01 - Robot Rock _ Oh Yeah','/mnt/user/upload/01 - Robot Rock _ Oh Yeah.mp3',1,1),(65545,1,'Fortune_Days','/mnt/user/upload/Fortune_Days.mp3',1,1),(65546,1,'Ramstein - Rammstein - Bang bang','/mnt/user/upload/Ramstein - Rammstein - Bang bang.mp3',1,1),(65547,1,'03 - Xotica','/mnt/user/upload/03 - Xotica.mp3',1,1),(65548,1,'06 - Ripple Effect','/mnt/user/upload/06 - Ripple Effect.mp3',1,1),(65549,1,'05 - Rapid Cognition','/mnt/user/upload/05 - Rapid Cognition.mp3',1,1),(65550,1,'04 - The Changeling','/mnt/user/upload/04 - The Changeling.mp3',1,1);
+INSERT INTO `user_audio` VALUES (65537,1,'13 - Human After All _ Together _ One More Time (Reprise) _ Music Sounds Better With You (Stardust)','/mnt/user/upload/13 - Human After All _ Together _ One More Time (Reprise) _ Music Sounds Better With You (Stardust).mp3',1,1),(65538,1,'04 - Too Long _ Steam Machine','/mnt/user/upload/04 - Too Long _ Steam Machine.mp3',1,1),(65539,1,'11 - Da Funk _ Daftendirekt','/mnt/user/upload/11 - Da Funk _ Daftendirekt.mp3',1,1),(65540,1,'10 - The Prime Time of Your Life _ The Brainwasher _ Rollin\' & Scratchin\' _ Alive','/mnt/user/upload/10 - The Prime Time of Your Life _ The Brainwasher _ Rollin\' & Scratchin\' _ Alive.mp3',1,1),(65541,1,'03 - Television Rules the Nation _ Crescendolls','/mnt/user/upload/03 - Television Rules the Nation _ Crescendolls.mp3',1,1),(65542,1,'08 - One More Time _ Aerodynamic','/mnt/user/upload/08 - One More Time _ Aerodynamic.mp3',1,1),(65543,1,'05 - Around the World _ Harder, Better, Faster, Stronger','/mnt/user/upload/05 - Around the World _ Harder, Better, Faster, Stronger.mp3',1,1),(65544,1,'06 - Burnin\' _ Too Long','/mnt/user/upload/06 - Burnin\' _ Too Long.mp3',1,1),(65545,1,'07 - Face to Face _ Short Circuit','/mnt/user/upload/07 - Face to Face _ Short Circuit.mp3',1,1),(65546,1,'12 - Superheroes _ Human After All _ Rock\'n Roll','/mnt/user/upload/12 - Superheroes _ Human After All _ Rock\'n Roll.mp3',1,1),(65547,1,'09 - Aerodynamic Beats _ Forget About the World','/mnt/user/upload/09 - Aerodynamic Beats _ Forget About the World.mp3',1,1),(65548,1,'01 - Robot Rock _ Oh Yeah','/mnt/user/upload/01 - Robot Rock _ Oh Yeah.mp3',1,1);
 /*!40000 ALTER TABLE `user_audio` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1940,7 +2150,7 @@ CREATE TABLE `user_video` (
 
 LOCK TABLES `user_video` WRITE;
 /*!40000 ALTER TABLE `user_video` DISABLE KEYS */;
-INSERT INTO `user_video` VALUES (65537,1,'sintel_trailer-480p','/mnt/user/upload/sintel_trailer-480p.mp4',1,0),(65538,1,'big_buck_bunny_480p_h264','/mnt/user/upload/big_buck_bunny_480p_h264.mp4',1,0);
+INSERT INTO `user_video` VALUES (65541,1,'The Glitch Mob - Fortune Days','/mnt/user/upload/The Glitch Mob - Fortune Days.mp4',1,0),(65540,1,'Spaceballs','/mnt/user/upload/Spaceballs.avi',1,0),(65539,1,'Blaze_test1_WMV-WMV9MP_CBR_320x240_AR4to3_15fps_512kbps_WMA9.2L2_32kbps_44100Hz_Mono','/mnt/user/upload/Blaze_test1_WMV-WMV9MP_CBR_320x240_AR4to3_15fps_512kbps_WMA9.2L2_32kbps_44100Hz_Mono.wmv',1,0),(65538,1,'blaze','/mnt/user/upload/blaze.wmv',1,0),(65537,1,'tears_of_steel_720p','/mnt/user/upload/tears_of_steel_720p.mov',1,1),(65542,1,'The Lion King','/mnt/user/upload/The Lion King.m4v',1,1);
 /*!40000 ALTER TABLE `user_video` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1966,7 +2176,7 @@ CREATE TABLE `video_extensions` (
 
 LOCK TABLES `video_extensions` WRITE;
 /*!40000 ALTER TABLE `video_extensions` DISABLE KEYS */;
-INSERT INTO `video_extensions` VALUES (1,'mov',1,1),(2,'wmv',1,0),(3,'avi',1,0),(4,'mp4',1,0),(5,'m4v',1,1);
+INSERT INTO `video_extensions` VALUES (1,'mov',1,1),(2,'wmv',1,0),(3,'avi',1,0),(4,'mp4',1,0),(5,'m4v',1,1),(6,'mkv',1,0);
 /*!40000 ALTER TABLE `video_extensions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2074,7 +2284,7 @@ CREATE TABLE `web_albummeta` (
 
 LOCK TABLES `web_albummeta` WRITE;
 /*!40000 ALTER TABLE `web_albummeta` DISABLE KEYS */;
-INSERT INTO `web_albummeta` VALUES ('100 Dubstep DJ Mix Hits 2014 - Continuous 60min Set & Full Length Uncut 100 Top Dubstep & Sexy Bass Music Masters [Explicit]','100 Dubstep DJ Mix Hits 2014 - Continuous 60min Set & Full Length Uncut 100 Top Dubstep & Sexy Bass Music Masters [Explicit]','Dubstep Masters, Dj Dubstep Rave & Dubster Spook','[object Object]',NULL,'2014','Dance & DJ'),('Alive 2007','Alive 2007','Daft Punk','',NULL,'2007','Electronic'),('Drink The Sea','Drink The Sea','The Glitch Mob','[object Object]',NULL,'2010','Dance & DJ'),('Kinetik','Kinetik','Phutureprimitive','[object Object]',NULL,'2011','Dance & DJ/Electronica'),('Mutter','Mutter','Rammstein','',NULL,'2001','');
+INSERT INTO `web_albummeta` VALUES ('Alive 2007','Alive 2007','Daft Punk','',NULL,'2007','Electronic');
 /*!40000 ALTER TABLE `web_albummeta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2101,7 +2311,7 @@ CREATE TABLE `web_albumtrackmeta` (
 
 LOCK TABLES `web_albumtrackmeta` WRITE;
 /*!40000 ALTER TABLE `web_albumtrackmeta` DISABLE KEYS */;
-INSERT INTO `web_albumtrackmeta` VALUES ('/mnt/user/upload/01 - Cryogenic Dreams.mp3',1,'Cryogenic Dreams','06:24','Kinetik'),('/mnt/user/upload/01 - Robot Rock _ Oh Yeah.mp3',1,'Robot Rock / Oh Yeah','06:28','Alive 2007'),('/mnt/user/upload/02 - Kinetik.mp3',2,'Kinetik','05:30','Kinetik'),('/mnt/user/upload/03 - Television Rules the Nation _ Crescendolls.mp3',3,'Television Rules the Nation / Crescendolls','04:51','Alive 2007'),('/mnt/user/upload/03 - Xotica.mp3',3,'Xotica','05:02','Kinetik'),('/mnt/user/upload/04 - The Changeling.mp3',4,'The Changeling','05:32','Kinetik'),('/mnt/user/upload/04 - Too Long _ Steam Machine.mp3',4,'Too Long / Steam Machine','07:02','Alive 2007'),('/mnt/user/upload/05 - Rapid Cognition.mp3',5,'Rapid Cognition','05:14','Kinetik'),('/mnt/user/upload/06 - Ripple Effect.mp3',6,'Ripple Effect','05:36','Kinetik'),('/mnt/user/upload/07 - High Rez.mp3',7,'High Rez','05:33','Kinetik'),('/mnt/user/upload/08 - Predatory Instincts.mp3',8,'Predatory Instincts','05:39','Kinetik'),('/mnt/user/upload/Dubstep_100hits.mp3',1,'100 Dubstep DJ Mix Hits 2014 (Top 33 Brostep, Glitch Hop, Hard Night Bangin Dark Drum & Bass 60 Min Continuous DJ Mix) [Explicit]','01:38','100 Dubstep DJ Mix Hits 2014 - Continuous 60min Set & Full Length Uncut 100 Top Dubstep & Sexy Bass Music Masters [Explicit]'),('/mnt/user/upload/Fortune_Days.mp3',9,'Fortune Days','06:22','Drink The Sea'),('/mnt/user/upload/Ramstein - Rammstein - Bang bang.mp3',5,'Feuer Frei!','03:09','Mutter');
+INSERT INTO `web_albumtrackmeta` VALUES ('/mnt/user/upload/01 - Robot Rock _ Oh Yeah.mp3',1,'Robot Rock / Oh Yeah','06:28','Alive 2007'),('/mnt/user/upload/03 - Television Rules the Nation _ Crescendolls.mp3',3,'Television Rules the Nation / Crescendolls','04:51','Alive 2007'),('/mnt/user/upload/04 - Too Long _ Steam Machine.mp3',4,'Too Long / Steam Machine','07:02','Alive 2007'),('/mnt/user/upload/05 - Around the World _ Harder, Better, Faster, Stronger.mp3',5,'Around the World / Harder, Better, Faster, Stronger','05:43','Alive 2007'),('/mnt/user/upload/06 - Burnin\' _ Too Long.mp3',6,'Burnin\' / Too Long','07:12','Alive 2007'),('/mnt/user/upload/07 - Face to Face _ Short Circuit.mp3',7,'Face to Face / Short Circuit','04:56','Alive 2007'),('/mnt/user/upload/08 - One More Time _ Aerodynamic.mp3',8,'One More Time / Aerodynamic','06:11','Alive 2007'),('/mnt/user/upload/09 - Aerodynamic Beats _ Forget About the World.mp3',9,'Aerodynamic Beats / Forget About the World','03:32','Alive 2007'),('/mnt/user/upload/10 - The Prime Time of Your Life _ The Brainwasher _ Rollin\' & Scratchin\' _ Alive.mp3',10,'The Prime Time of Your Life / The Brainwasher / Rollin\' & Scratchin\' / Alive','10:23','Alive 2007'),('/mnt/user/upload/11 - Da Funk _ Daftendirekt.mp3',11,'Da Funk / Daftendirekt','06:38','Alive 2007'),('/mnt/user/upload/12 - Superheroes _ Human After All _ Rock\'n Roll.mp3',12,'Superheroes / Human After All / Rock\'n Roll','05:42','Alive 2007'),('/mnt/user/upload/13 - Human After All _ Together _ One More Time (Reprise) _ Music Sounds Better With You (Stardust).mp3',13,'Human After All / Together / One More Time (Reprise) / Music Sounds Better With You (Stardust)','09:59','Alive 2007');
 /*!40000 ALTER TABLE `web_albumtrackmeta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2189,7 +2399,7 @@ CREATE TABLE `web_configuration` (
   `key` varchar(256) COLLATE latin1_general_ci NOT NULL,
   `value` varchar(256) COLLATE latin1_general_ci NOT NULL,
   PRIMARY KEY (`ConfigurationID`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2199,7 +2409,6 @@ CREATE TABLE `web_configuration` (
 LOCK TABLES `web_configuration` WRITE;
 /*!40000 ALTER TABLE `web_configuration` DISABLE KEYS */;
 INSERT INTO `web_configuration` VALUES (1,'media_seek_speed_init','2'),(2,'media_seek_speed_mult','2'),(3,'clientPath','C:/emteq'),(4,'theme','pc12'),(5,'unsupported_browser_message','Accessing the eConnect Inflight Entertainment System with this browser will not allow for the best user experience. To access the system and provide you with the best user experience, we recommend the latest version of Chrome.'),(6,'unsupported_browser_timeout','0'),(7,'hls_server_url','http://10.0.9.251:8010/indexfile.m3u8'),(10,'map_installed','none'),(17,'whitelist_extensions','aac'),(18,'whitelist_extensions','aiff'),(19,'whitelist_extensions','amr'),(20,'whitelist_extensions','flac'),(21,'whitelist_extensions','mp3'),(22,'whitelist_extensions','m4a'),(23,'whitelist_extensions','wav'),(24,'whitelist_extensions','wma'),(25,'whitelist_extensions','midi'),(26,'whitelist_extensions','ogg'),(27,'whitelist_extensions','wpl'),(28,'whitelist_extensions','3gp'),(29,'whitelist_extensions','avi'),(30,'whitelist_extensions','h264'),(31,'whitelist_extensions','m4v'),(32,'whitelist_extensions','mkv'),(33,'whitelist_extensions','mov'),(34,'whitelist_extensions','mp4'),(35,'whitelist_extensions','mpg'),(36,'whitelist_extensions','ogv'),(37,'whitelist_extensions','wmv'),(38,'whitelist_extensions','ai'),(39,'whitelist_extensions','drw'),(40,'whitelist_extensions','odg'),(41,'whitelist_extensions','svg'),(42,'whitelist_extensions','bmp'),(43,'whitelist_extensions','gif'),(44,'whitelist_extensions','jpg'),(45,'whitelist_extensions','png'),(46,'whitelist_extensions','psd'),(47,'whitelist_extensions','tif'),(48,'whitelist_extensions','tiff'),(49,'whitelist_extensions','tabi'),(50,'whitelist_extensions','abi'),(51,'whitelist_extensions','doc'),(52,'whitelist_extensions','docx'),(53,'whitelist_extensions','docm'),(54,'whitelist_extensions','dot'),(55,'whitelist_extensions','dotm'),(56,'whitelist_extensions','dotx'),(57,'whitelist_extensions','epub'),(58,'whitelist_extensions','ind'),(59,'whitelist_extensions','indd'),(60,'whitelist_extensions','key'),(61,'whitelist_extensions','keynote'),(62,'whitelist_extensions','mpp'),(63,'whitelist_extensions','mpt'),(64,'whitelist_extensions','odf'),(65,'whitelist_extensions','ods'),(66,'whitelist_extensions','odt'),(67,'whitelist_extensions','ott'),(68,'whitelist_extensions','oxps'),(69,'whitelist_extensions','pages'),(70,'whitelist_extensions','pdf'),(71,'whitelist_extensions','pmd'),(72,'whitelist_extensions','pot'),(73,'whitelist_extensions','potx'),(74,'whitelist_extensions','pps'),(75,'whitelist_extensions','ppsx'),(76,'whitelist_extensions','ppt'),(77,'whitelist_extensions','pptm'),(78,'whitelist_extensions','pptx'),(79,'whitelist_extensions','prproj'),(80,'whitelist_extensions','ps'),(81,'whitelist_extensions','pub'),(82,'whitelist_extensions','pwi'),(83,'whitelist_extensions','rep'),(84,'whitelist_extensions','rtf'),(85,'whitelist_extensions','sdd'),(86,'whitelist_extensions','sdw'),(87,'whitelist_extensions','shs'),(88,'whitelist_extensions','snp'),(89,'whitelist_extensions','sxw'),(90,'whitelist_extensions','vsd'),(91,'whitelist_extensions','wdp'),(92,'whitelist_extensions','wps'),(93,'whitelist_extensions','xps'),(94,'whitelist_extensions','csv'),(95,'whitelist_extensions','rtf'),(96,'whitelist_extensions','txt'),(97,'whitelist_extensions','xml'),(98,'whitelist_extensions','xls'),(99,'whitelist_extensions','xlsx'),(100,'whitelist_extensions','xlsm'),(101,'whitelist_extensions','jpeg');
-
 /*!40000 ALTER TABLE `web_configuration` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2310,7 +2519,7 @@ CREATE TABLE `web_pages` (
 
 LOCK TABLES `web_pages` WRITE;
 /*!40000 ALTER TABLE `web_pages` DISABLE KEYS */;
-INSERT INTO `web_pages` VALUES (1,1,1,'Home','',1,0),(2,1,9,'Media','',2,0),(3,1,8,'Map','',6,0),(4,1,7,'Maintenance','',7,0),(5,1,12,'File Manager','',8,0),(6,1,4,'Video','',3,0),(7,1,5,'Audio','',4,0),(8,1,13,'XM','',5,0);
+INSERT INTO `web_pages` VALUES (1,1,1,'Home','',1,0),(2,1,9,'Media','',2,0),(3,1,8,'Map','',6,0),(4,1,7,'Maintenance','',7,0),(5,1,12,'File Manager','',8,0),(6,1,4,'Video','',3,0),(7,1,5,'Audio','',4,0),(8,1,13,'XM','\0',5,0);
 /*!40000 ALTER TABLE `web_pages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2463,7 +2672,7 @@ CREATE TABLE `web_userwidgets` (
 
 LOCK TABLES `web_userwidgets` WRITE;
 /*!40000 ALTER TABLE `web_userwidgets` DISABLE KEYS */;
-INSERT INTO `web_userwidgets` VALUES (1,24,NULL,2,'Media',0,200,NULL,NULL,'',3,0),(2,34,4,2,'PED Streaming',0,0,NULL,NULL,'',1,0),(3,34,5,2,'eConnect AVOD',0,0,NULL,NULL,'',4,0),(4,35,NULL,2,'Output',0,-300,NULL,NULL,'',2,0),(5,35,NULL,2,'Source',0,-300,NULL,NULL,'',1,0),(6,25,NULL,3,NULL,0,0,NULL,NULL,'',1,0),(7,45,NULL,1,'Slideshow',0,0,700,600,'',1,0),(8,27,NULL,4,'Flight Planner',0,10,NULL,NULL,'\0',10,0),(19,48,NULL,4,'Refresh Media Files',300,110,200,NULL,'',2,0),(23,33,NULL,4,'Measurements:',300,20,NULL,NULL,'',3,0),(24,14,NULL,4,'Select Refresh Media Files to update system media and update software files.',10,50,200,0,'',1,0),(25,12,NULL,4,NULL,0,10,520,175,'',4,0),(27,18,NULL,4,'Versions',0,325,NULL,NULL,1,1,0),(28,19,NULL,4,'Update Software',0,200,NULL,NULL,'',5,0),(29,50,NULL,5,'File Manager',0,50,700,400,'',1,0),(300,49,0,3,'FMS Container',0,575,715,125,'',1,0),(301,28,300,3,'Altitude',0,600,0,0,'\0',0,0),(302,28,300,3,'Airspeed',0,0,0,0,'\0',0,0),(303,28,300,3,'Mach',0,0,0,0,'\0',0,0),(304,28,300,3,'Vertical Speed',0,0,0,0,'\0',0,0),(305,28,300,3,'Ground Speed',350,600,0,0,'\0',0,0),(306,28,300,3,'Latitude',0,0,0,0,'\0',0,0),(307,28,300,3,'Longitude',0,0,0,0,'\0',0,0),(308,28,300,3,'Heading',575,600,0,0,'\0',0,0),(309,28,300,3,'Wind Speed',0,600,0,0,'\0',0,0),(310,28,300,3,'Wind Direction',200,600,0,0,'\0',0,0),(311,28,300,3,'Air Temperature',435,600,0,0,'\0',0,0),(312,28,300,3,'Date',0,0,0,0,'\0',0,0),(313,28,300,3,'GMT',0,0,0,0,'\0',0,0),(314,28,300,3,'GMT Offset Destination',500,600,0,0,'\0',0,0),(315,28,300,3,'Time to Destination',250,600,0,0,'\0',0,0),(316,28,300,3,'Dist to Destination',0,600,0,0,'\0',0,0),(317,51,NULL,7,'Audio Library',0,50,700,400,'',1,0),(318,52,NULL,6,'Video Library',0,50,700,400,'',1,0),(319,55,NULL,8,'XM Container',0,50,700,NULL,'',0,0),(320,54,319,8,'XM Player',50,10,600,40,'',0,0),(321,53,319,8,'XM Controls',0,50,700,NULL,'',0,0);
+INSERT INTO `web_userwidgets` VALUES (1,24,NULL,2,'Media',0,200,NULL,NULL,'',3,0),(2,34,4,2,'PED Streaming',0,0,NULL,NULL,'',1,0),(3,34,5,2,'eConnect AVOD',0,0,NULL,NULL,'',4,0),(4,35,NULL,2,'Output',0,-300,NULL,NULL,'',2,0),(5,35,NULL,2,'Source',0,-300,NULL,NULL,'',1,0),(6,25,NULL,3,NULL,0,0,NULL,NULL,'',1,0),(7,45,NULL,1,'Slideshow',0,0,700,600,'',1,0),(8,27,NULL,4,'Flight Planner',0,10,NULL,NULL,'\0',10,0),(19,48,NULL,4,'Refresh Media Files',300,110,200,NULL,'',2,0),(23,33,NULL,4,'Measurements:',300,20,NULL,NULL,'',3,0),(24,14,NULL,4,'Select Refresh Media Files to update system media and update software files.',10,50,200,0,'',1,0),(25,12,NULL,4,NULL,0,10,520,175,'',4,0),(27,18,NULL,4,'Versions',0,325,NULL,NULL,'',1,0),(28,19,NULL,4,'Update Software',0,200,NULL,NULL,'',5,0),(29,50,NULL,5,'File Manager',0,50,700,400,'',1,0),(300,49,0,3,'FMS Container',0,575,715,125,'',1,0),(301,28,300,3,'Altitude',0,600,0,0,'',1,0),(302,28,300,3,'Airspeed',0,0,0,0,'',2,0),(303,28,300,3,'Mach',0,0,0,0,'',3,0),(304,28,300,3,'Vertical Speed',0,0,0,0,'\0',0,0),(305,28,300,3,'Ground Speed',350,600,0,0,'',4,0),(306,28,300,3,'Latitude',0,0,0,0,'',5,0),(307,28,300,3,'Longitude',0,0,0,0,'',6,0),(308,28,300,3,'Heading',575,600,0,0,'',7,0),(309,28,300,3,'Wind Speed',0,600,0,0,'',8,0),(310,28,300,3,'Wind Direction',200,600,0,0,'',9,0),(311,28,300,3,'Air Temperature',435,600,0,0,'\0',0,0),(312,28,300,3,'Date',0,0,0,0,'\0',0,0),(313,28,300,3,'GMT',0,0,0,0,'\0',0,0),(314,28,300,3,'GMT Offset Destination',500,600,0,0,'\0',0,0),(315,28,300,3,'Time to Destination',250,600,0,0,'\0',0,0),(316,28,300,3,'Dist to Destination',0,600,0,0,'\0',0,0),(317,51,NULL,7,'Audio Library',0,50,700,400,'',1,0),(318,52,NULL,6,'Video Library',0,50,700,400,'',1,0),(319,55,NULL,8,'XM Container',0,50,700,NULL,'',0,0),(320,54,319,8,'XM Player',50,10,600,40,'',0,0),(321,53,319,8,'XM Controls',0,50,700,NULL,'',0,0);
 /*!40000 ALTER TABLE `web_userwidgets` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2495,7 +2704,7 @@ CREATE TABLE `web_userwidgetstate` (
 
 LOCK TABLES `web_userwidgetstate` WRITE;
 /*!40000 ALTER TABLE `web_userwidgetstate` DISABLE KEYS */;
-INSERT INTO `web_userwidgetstate` VALUES (1,NULL,1,0,0,'{\"current\":1,\"playlist\":0,\"source\":1}'),(2,NULL,2,0,0,NULL),(3,NULL,7,0,0,NULL),(4,NULL,8,0,0,'{\"Waypoints\":[{\"Lat\":45,\"Lon\":100},{\"Lat\":50,\"Lon\":100},{\"Lat\":50,\"Lon\":-100},{\"Lat\":75,\"Lon\":-120}]}'),(5,NULL,19,0,0,NULL),(6,NULL,20,0,0,NULL),(7,NULL,21,0,0,NULL),(8,NULL,22,0,0,NULL);
+INSERT INTO `web_userwidgetstate` VALUES (1,NULL,1,0,0,'{\"current\":0,\"playlist\":0,\"source\":2}'),(2,NULL,2,0,0,NULL),(3,NULL,7,0,0,NULL),(4,NULL,8,0,0,'{\"Waypoints\":[{\"Lat\":45,\"Lon\":100},{\"Lat\":50,\"Lon\":100},{\"Lat\":50,\"Lon\":-100},{\"Lat\":75,\"Lon\":-120}]}'),(5,NULL,19,0,0,NULL),(6,NULL,20,0,0,NULL),(7,NULL,21,0,0,NULL),(8,NULL,22,0,0,NULL);
 /*!40000 ALTER TABLE `web_userwidgetstate` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2527,7 +2736,7 @@ CREATE TABLE `web_videometa` (
 
 LOCK TABLES `web_videometa` WRITE;
 /*!40000 ALTER TABLE `web_videometa` DISABLE KEYS */;
-INSERT INTO `web_videometa` VALUES ('/mnt/user/upload/big_buck_bunny_480p_h264.mp4','big_buck_bunny_480p_h264','','09:56','','','','','',''),('/mnt/user/upload/sintel_trailer-480p.mp4','Sintel Trailer','','52','','','','','','');
+INSERT INTO `web_videometa` VALUES ('/mnt/user/upload/blaze.wmv','blaze','','20','','','','','',''),('/mnt/user/upload/Blaze_test1_WMV-WMV9MP_CBR_320x240_AR4to3_15fps_512kbps_WMA9.2L2_32kbps_44100Hz_Mono.wmv','Blaze_test1_WMV-WMV9MP_CBR_320x240_AR4to3_15fps_512kbps_WMA9.2L2_32kbps_44100Hz_Mono','','20','','','','','',''),('/mnt/user/upload/Spaceballs.avi','Spaceballs','','01:08','','','','','',''),('/mnt/user/upload/tears_of_steel_720p.mov','tears_of_steel_720p','','12:14','','','','','',''),('/mnt/user/upload/The Glitch Mob - Fortune Days.mp4','The Glitch Mob - Fortune Days','','06:20','','','','','',''),('/mnt/user/upload/The Lion King.m4v','Chapter 1','','01:28:22','','','','','','');
 /*!40000 ALTER TABLE `web_videometa` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2687,7 +2896,6 @@ CREATE TABLE `xm_channel_list` (
 
 LOCK TABLES `xm_channel_list` WRITE;
 /*!40000 ALTER TABLE `xm_channel_list` DISABLE KEYS */;
-INSERT INTO `xm_channel_list` VALUES (1,1,'XM Preview      '),(1,2,'Hits 1          '),(1,3,'Venus           '),(1,4,'Pitbull         '),(1,5,'50s on 5        '),(1,6,'60s on 6        '),(1,7,'70s on 7        '),(1,8,'80s on 8        '),(1,9,'90s on 9        '),(1,10,'Pop2K           '),(1,14,'The Coffee House'),(1,15,'The Pulse       '),(1,16,'The Blend       '),(1,17,'Love            '),(1,18,'xLLimitedEdition'),(1,21,'Undergrnd Garage'),(1,22,'Pearl Jam Radio '),(1,23,'Grateful Dead   '),(1,24,'Margaritaville  '),(1,25,'Classic Rewind  '),(1,26,'Classic Vinyl   '),(1,27,'Deep Tracks     '),(1,28,'The Spectrum    '),(1,29,'Jam_ON          '),(1,30,'The Loft        '),(1,32,'The Bridge      '),(1,33,'1st Wave        '),(1,34,'Lithium         '),(1,35,'SiriusXMU       '),(1,36,'Alt Nation      '),(1,37,'Octane          '),(1,38,'Ozzy\'s Boneyard '),(1,39,'Hair Nation     '),(1,40,'xL Liquid Metal '),(1,42,'The Joint       '),(1,43,'xL Backspin     '),(1,44,'xL Hip-HopNation'),(1,46,'The Heat        '),(1,48,'Heart + Soul    '),(1,49,'Soul Town       '),(1,50,'The Groove      '),(1,51,'BPM             '),(1,52,'Electric Area   '),(1,53,'Chill           '),(1,54,'Studio 54 Radio '),(1,55,'Utopia          '),(1,56,'The Highway     '),(1,57,'Y2Kountry       '),(1,58,'Prime Country   '),(1,59,'Willie\'s Rdhouse'),(1,60,'Outlaw Country  '),(1,61,'Bluegrass Junctn'),(1,63,'The Message     '),(1,64,'KFrankln\'sPraise'),(1,65,'enLighten       '),(1,66,'Watercolors     '),(1,67,'Real Jazz       '),(1,68,'Spa             '),(1,69,'Caliente        '),(1,70,'Bluesville      '),(1,71,'Siriusly Sinatra'),(1,72,'On Broadway     '),(1,73,'40s Junction    '),(1,74,'Met Opera Radio '),(1,76,'Symphony Hall   '),(1,78,'Kids Place Live '),(1,79,'Radio Disney    '),(1,80,'ESPN Radio      '),(1,82,'Mad Dog Sports  '),(1,83,'Bleacher Report '),(1,84,'College Sports  '),(1,89,'MLBNetwork Radio'),(1,105,'EW Radio        '),(1,108,'Today Show Radio'),(1,110,'Doctor Radio    '),(1,114,'FOX News Channel'),(1,116,'CNN             '),(1,120,'BBC World Svc   '),(1,121,'SiriusXM Insight'),(1,122,'NPR Now         '),(1,123,'PRX Public Radio'),(1,128,'Joel Osteen     '),(1,129,'Catholic Channel'),(1,131,'Family Talk     '),(1,141,'HUR Voices      '),(1,142,'HBCU            '),(1,143,'BYU Radio       '),(1,144,'Korea Today     '),(1,147,'RURAL Radio     '),(1,148,'RadioClassics   '),(1,152,'En Vivo         '),(1,153,'Cristina Radio  '),(1,154,'American Latino '),(1,162,'CBC Radio 3     '),(1,163,'Chansons        '),(1,166,'FrancoCountry   '),(1,169,'CBC Radio One   '),(1,170,'Ici Premiere    '),(1,171,'CBC Country     '),(1,173,'The Verge       '),(1,174,'Influence Franco');
 /*!40000 ALTER TABLE `xm_channel_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2713,7 +2921,7 @@ CREATE TABLE `xm_config` (
 
 LOCK TABLES `xm_config` WRITE;
 /*!40000 ALTER TABLE `xm_config` DISABLE KEYS */;
-INSERT INTO `xm_config` VALUES (1,1,1,5);
+INSERT INTO `xm_config` VALUES (1,3,0,2);
 /*!40000 ALTER TABLE `xm_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2741,7 +2949,6 @@ CREATE TABLE `xm_playing` (
 
 LOCK TABLES `xm_playing` WRITE;
 /*!40000 ALTER TABLE `xm_playing` DISABLE KEYS */;
-INSERT INTO `xm_playing` VALUES (1,29,'Jam_ON          ','Misaligned (ft. ','Break Science   ','Rock            ');
 /*!40000 ALTER TABLE `xm_playing` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2792,4 +2999,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-02 12:24:02
+-- Dump completed on 2016-08-25 11:41:52
