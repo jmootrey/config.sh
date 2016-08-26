@@ -557,6 +557,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   echo  "2. CWR450-5000-01 XM eConnect System Low Capacity Drive" 
   echo  "3. CWR450-2000-02 Base eConnect System High Capacity Drive"
   echo  "4. CWR450-5000-02 XM eConnect System High Capacity Drive" 
+  echo  "----------------------------------------------------------"
   echo  "5. CWR451-2000-01 2nd Gen System Low Capacity Drive "
   echo  "6. CWR451-5000-01 2nd Gen XM System Low Capacity Drive" 
   echo  "7. CWR451-2000-02 2nd Gen System High Capacity Drive"
@@ -1003,7 +1004,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   echo -e "FMS Field(s)${blue}" | tee -a $confdir$lot
   for i in ${field1[@]}; do
     case $i in
-      1) echo -e - "Altitude" | tee -a $confdir$lot;;
+      1) echo -e "Altitude" | tee -a $confdir$lot;;
       2) echo -e "Airspeed" | tee -a $confdir$lot;;
       3) echo -e "Mach" | tee -a $confdir$lot;;
       4) echo -e "Ground Speed" | tee -a $confdir$lot;;
