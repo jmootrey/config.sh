@@ -600,6 +600,42 @@ LOCK TABLES `fms_data` WRITE;
 INSERT INTO `fms_data` VALUES (1,1,'150','GMT','hh:mm:ss',''),(2,2,'203','Altitude','Feet',''),(3,2,'204','Altitude - Corrected','Feet',''),(4,3,'205','Mach','Mach',''),(27,23,'353','Destination GMT offset','+/-hh:mm:ss',''),(5,4,'210','Airspeed','Knots',''),(6,5,'212','Vertical Speed','Feet/Min',''),(7,6,'310','Latitude','Degrees',''),(8,7,'311','Longitude','Degrees',''),(9,8,'312','Ground Speed','Knots',''),(10,9,'313','Track Angle','Degrees',''),(11,10,'314','True Heading','Degrees',' '),(12,11,'315','Wind Speed','Knots',''),(13,12,'316','Wind Direction','Degrees',''),(14,13,'213','Air temperature','Deg C',''),(15,14,'351','Distance to Destination','Nautical Miles',''),(16,15,'352','Time to Destination','Minutes',''),(17,16,'361','Origin Airport - part 1','Code',''),(18,17,'362','Origin Airport - part 2','Code',''),(20,19,'364','Destination Airport - part 2','Code',''),(19,18,'365','Destination Airport - part 1','Code',''),(21,10,'320','Magnetic Heading','Degrees',''),(26,22,'371','Equiptment Info','Text',''),(25,21,'074','Flight Plan Records','Count',''),(22,20,'260','Date','dd/mm/yy',''),(23,14,'251','Distance to Destination','Nautical Miles',''),(24,15,'252','Time to Destination','Minutes',''),(28,40,'275','Cabin ECS Cntl','boolean',''),(30,42,'272','Actual Cabin Zone Temperature','Kelvin',''),(31,43,'275','Cabin Vent Fan Speed','Count (0 - 7)',''),(32,44,'271','Commanded Cabin Zone Temperature','Kelvin',''),(34,46,'61','Origin and Destination 1','Code',''),(35,47,'62','Origin and Destination 2','Code',''),(36,48,'63','Origin and Destination 3','Code',''),(37,49,'275','Aircraft WOW','boolean',''),(29,41,'275','Cabin Lighting Control','boolean','');
 /*!40000 ALTER TABLE `fms_data` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `fms_data_BUPD` BEFORE UPDATE ON `fms_data` FOR EACH ROW begin
+if new.arinc_label=311 AND new.value < 0 then
+  set new.value=-180-new.value;
+end if;
+IF new.arinc_label=310 AND new.value  < 0 THEN
+  set new.value=-180-new.value;
+end if;
+IF new.arinc_label=320 AND new.value < 0 THEN
+ set new.value=180-new.value;
+end if;
+If new.arinc_label=320 AND new.value = 0 THEN
+  if old.value > 170 AND old.value < 190 THEN
+    set new.value = 180;
+  end if;
+end if;
+IF new.arinc_label=316 AND new.value < 0 THEN
+  set new.value=180-new.value;
+end if;
+IF new.arinc_label=213 AND new.value < 0 THEN
+  set new.value=round(-1 * ( new.value + 512 ));
+end if;
+end */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `fms_flight_plan`
@@ -628,6 +664,28 @@ LOCK TABLES `fms_flight_plan` WRITE;
 /*!40000 ALTER TABLE `fms_flight_plan` DISABLE KEYS */;
 /*!40000 ALTER TABLE `fms_flight_plan` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `fms_flight_plan_BINS` BEFORE INSERT ON `fms_flight_plan` FOR EACH ROW begin
+IF new.longitude<0 THEN
+  SET new.longitude=-180-new.longitude;
+  end if;
+IF new.latitude<0 THEN
+  SET new.latitude=-180-new.latitude;
+  end if;
+end */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `ife_remote`
@@ -1880,7 +1938,7 @@ CREATE TABLE `system_upgrades` (
 
 LOCK TABLES `system_upgrades` WRITE;
 /*!40000 ALTER TABLE `system_upgrades` DISABLE KEYS */;
-INSERT INTO `system_upgrades` VALUES (1,'update_ECONAPP_','.tgz','/opt/eConnect','ssd-optfs',1),(2,'update_DB_','.sql','database','',3),(3,'update_QUALTEST_','.tgz','/opt/board_tests','ssd-optfs',1),(4,'update_C2_','.tgz','/opt/c2','ssd-optfs',1),(5,'update_AVIOIP_','.tgz','/opt/avioip','ssd-optfs',1),(6,'update_FPGA_','.bin','fpga','',1),(7,'update_IOBOARD_','.bin','ioboard','',3),(8,'update_ECONNECT_','.sh','/mnt/user/local','',3),(9,'update_LIST_','.lst','/opt','ssd-optfs',3),(10,'update_SCENES_','.tgz','/opt/scenes','ssd-optfs',3),(11,'update_TILESTREAM_','.tgz','/opt/tilestream','ssd-optfs',1),(12,'update_SPN_','.bin','spn','',3),(13,'update_MMAP_','.tgz','/mnt/mmap','ssd-mmap',1),(14,'update_TSAPP_','.tgz','/opt/tsApp','ssd-optfs',2),(15,'update_TSIMAGES_','.tgz','/opt/Images','ssd-optfs',2),(16,'update_TSTESTAPPS_','.tgz','/opt/testapps','ssd-optfs',2),(17,'update_TSECONAPP_','.tgz','/opt/eConnect','ssd-optfs',2),(18,'update_TSC2_','.tgz','/opt/c2','ssd-optfs',2),(19,'update_CWRTSAPP','.tgz','/opt/tsApp','ssd-optfs',1),(20,'update_SPN03_','.bin','spn03','',3);
+INSERT INTO `system_upgrades` VALUES (1,'update_ECONAPP_','.tgz','/opt/eConnect','ssd-optfs',5),(2,'update_DB_','.sql','database','',7),(3,'update_QUALTEST_','.tgz','/opt/board_tests','ssd-optfs',5),(4,'update_C2_','.tgz','/opt/c2','ssd-optfs',5),(5,'update_AVIOIP_','.tgz','/opt/avioip','ssd-optfs',5),(6,'update_FPGA_','.bin','fpga','',5),(7,'update_IOBOARD_','.bin','ioboard','',7),(8,'update_ECONNECT_','.sh','/mnt/user/local','',7),(9,'update_LIST_','.lst','/opt','ssd-optfs',7),(10,'update_SCENES_','.tgz','/opt/scenes','ssd-optfs',7),(11,'update_TILESTREAM_','.tgz','/opt/tilestream','ssd-optfs',5),(12,'update_SPN_','.bin','spn','',7),(13,'update_MMAP_','.tgz','/mnt/mmap','ssd-mmap',5),(14,'update_TSAPP_','.tgz','/opt/tsApp','ssd-optfs',2),(15,'update_TSIMAGES_','.tgz','/opt/Images','ssd-optfs',2),(16,'update_TSTESTAPPS_','.tgz','/opt/testapps','ssd-optfs',2),(17,'update_TSECONAPP_','.tgz','/opt/eConnect','ssd-optfs',2),(18,'update_TSC2_','.tgz','/opt/c2','ssd-optfs',2),(19,'update_CWRTSAPP','.tgz','/opt/tsApp','ssd-optfs',5),(20,'update_SPN03_','.bin','spn03','',7);
 /*!40000 ALTER TABLE `system_upgrades` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2999,4 +3057,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-26  9:50:07
+-- Dump completed on 2016-09-01 12:50:40
