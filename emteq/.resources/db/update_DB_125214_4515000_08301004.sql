@@ -512,7 +512,7 @@ CREATE TABLE `econnect_config` (
 
 LOCK TABLES `econnect_config` WRITE;
 /*!40000 ALTER TABLE `econnect_config` DISABLE KEYS */;
-INSERT INTO `econnect_config` VALUES (1,0,'10.0.9.2',' ',1,1,1,1,0),(2,0,'10.0.9.2',' ', 1,1,1,1,0);
+INSERT INTO `econnect_config` VALUES (1,0,'10.0.9.2',' ',1,1,1,1,0),(2,0,'10.0.9.1',' ', 1,1,1,1,0);
 /*!40000 ALTER TABLE `econnect_config` ENABLE KEYS */;
 UNLOCK TABLES;
 

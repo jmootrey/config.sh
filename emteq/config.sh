@@ -396,7 +396,7 @@ while : ; do
       echo -n "Select file: "
       read ifile
       encoder=${files[$ifile]}
-      echo encoder $encoder
+      cfg_update encoder $encoder
     ;;   
     13) header
       echo "Please insert USB key with update file(s)"
@@ -1204,7 +1204,7 @@ fi
 #If SIP is enabled we need to punch a hole in the firewall. Added script does this at boot
 if [ "$sip" = "y" ]; then
   gunzip ${dir}payload/temp/update_SCENES_factory.tgz
-  tar -rf ${dir}payload/temp/update_SCENES_factory.tar --transform 's,.*/,scenes/,' ${dir}scene/usb_fix.sh &>/dev/null
+  tar -rf ${dir}payload/temp/update_SCENES_factory.tar --transform 's,.*/,scenes/,' ${dir}scene/iptables_SIP.sh &>/dev/null
   gzip ${dir}payload/temp/update_SCENES_factory.tar
   mv ${dir}payload/temp/update_SCENES_factory.tar.gz ${dir}payload/temp/update_SCENES_factory.tgz
 fi
