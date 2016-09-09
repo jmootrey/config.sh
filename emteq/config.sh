@@ -484,10 +484,10 @@ for i in {1..9}; do
     14) echo "UPDATE econnect.web_userwidgets SET visible=1, ordinal=$i WHERE UserWidgetID=316;" >> $dbstatic"update.sql";;
   esac
 done
-if [ $sip = 'y' ] ; then
-  echo "DELETE FROM econnect.econnect_config WHERE ecms_id=2;" >> $dbstatic"update.sql"
-  echo "UPDATE econnect.econnect_config SET econnect_ip='10.0.9.1' WHERE ecms_id=1;" >> $dbstatic"update.sql"
-fi
+#if [ $sip = 'y' ] ; then
+#  echo "DELETE FROM econnect.econnect_config WHERE ecms_id=2;" >> $dbstatic"update.sql"
+#  echo "UPDATE econnect.econnect_config SET econnect_ip='10.0.9.1' WHERE ecms_id=1;" >> $dbstatic"update.sql"
+#fi
 #Process lighting for PC24
 #This will need more work when scene buttons are added. 
 if [[ $platform = 2 ]]; then
