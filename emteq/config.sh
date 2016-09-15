@@ -140,6 +140,21 @@ while : ; do
 done
 }
 
+function warning {
+  header
+  echo ' '
+  echo  -e "\033[33;5;7m------------------------------\033[0m"
+  echo  -e "\033[33;5;7m!!!!!!!!!!!WARNING!!!!!!!!!!!!\033[0m"
+  echo  -e "\033[33;5;7m------------------------------\033[0m"
+  echo ' '
+  echo 'Partition Error Detected, Please Contact BE Aerospace for further details'
+  echo  ' '
+  echo -e 'Press Any Key to Return to the Main Menu'
+  read junk
+  
+  
+}
+
 #makekey - Loads selected Map to Flash Drive. 
 function makekey {
  header
@@ -228,14 +243,18 @@ function sendconfig {
   fi
 }
 
-#sshpass alias, saves a little typing. Passes command to host while hiding output from user
+#sshpass alias saves a little typing. 
+function sshraw() {
+  sshpass -f /home/emteq/.id ssh emteq@$econip '$1'
+}
+#Passes command to host while hiding output from user
 function sshb() { 
 #echo -e " ${black} " #Hide ssh ouput from user. 
 sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "$1" &>/dev/null 
 #echo -e " ${white} " #return console text to white
 }
 
-#sshpass alias. Pases command to host, makes output available to user
+#sshpass alias. Passes command to host, makes output available to user
 function sshbr() { 
 sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "$1" 
 }
@@ -484,10 +503,10 @@ for i in {1..9}; do
     14) echo "UPDATE econnect.web_userwidgets SET visible=1, ordinal=$i WHERE UserWidgetID=316;" >> $dbstatic"update.sql";;
   esac
 done
-#if [ $sip = 'y' ] ; then
-#  echo "DELETE FROM econnect.econnect_config WHERE ecms_id=2;" >> $dbstatic"update.sql"
-#  echo "UPDATE econnect.econnect_config SET econnect_ip='10.0.9.1' WHERE ecms_id=1;" >> $dbstatic"update.sql"
-#fi
+if [ $sip = 'y' ] ; then
+  echo "UPDATE econnect.econnect_config SET econnect_ip='10.0.9.2' WHERE ecms_id=2;" >> $dbstatic"update.sql"
+  echo "UPDATE econnect.econnect_config SET econnect_ip='10.0.9.1' WHERE ecms_id=1;" >> $dbstatic"update.sql"
+fi
 #Process lighting for PC24
 #This will need more work when scene buttons are added. 
 if [[ $platform = 2 ]]; then
@@ -1018,7 +1037,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
       12) echo -e "GMT" | tee sed -i  "s,\x1B\[[0-9;]*[a-zA-Z],,g" test-a $confdir$lot;;
       13) echo -e "Time To Destination" | tee -a $confdir$lot;;
       14) echo -e "Distance to Destinaton" | tee -a $confdir$lot;;
-      17) echo -e "Selection Voided" | tee -a $confdir$lot;;
+      17) echo -e "${red}Selection Voided" | tee -a $confdir$lot;;
     esac
   done
   echo -e "${white} "
@@ -1248,93 +1267,105 @@ if [[ $x = 'x' ]]; then break; fi
 ssh-keyscan -t rsa $econip > ~/.ssh/known_hosts
 echo " "
 echo "eConnect Located, Beginning File Transfer"
-#If map is needed, copy first
-if [ $maptrans = 1 ] && [ "$map" != "7" ]; then
-  #prepare econnect for map copy
-  echo "This process may take up to 20 minutes" #reduce time for cwr451
-  echo ""
-  echo -e "${red}\e[5mMap selected for transfer.${normal}\e[25m"
-  echo " "
-  echo "Configuring Map Partition"
-  echo ""
-  mode=1 
-  sshbr "'echo "Q3tm36170" | sudo -S mount -o remount, rw /mnt/mmap'"
-  echo " "
-  echo -e  "${red}Copying Map to eConnect${white}"
-  echo " "
-  #grant ownership to emteq
-  sshb "'echo "Q3tm36170" | sudo -S chown emteq:emteq /mnt/mmap'"
-  #delete existing map if any
-  sshb "'echo "Q3tm36170" | sudo -S rm -f /mnt/mmap/*.mbtiles'"
-  case $map in 
-    1) sshpass -f /home/emteq/.id rsync --progress "$dir"map/na.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
-    2) sshpass -f /home/emteq/.id rsync --progress "$dir"map/eu.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
-    3) sshpass -f /home/emteq/.id rsync --progress "$dir"map/me.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
-    4) sshpass -f /home/emteq/.id rsync --progress "$dir"map/sa.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
-    5) sshpass -f /home/emteq/.id rsync --progress "$dir"map/as.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
-    6) sshpass -f /home/emteq/.id rsync --progress "$dir"map/wo.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
-  esac
-  echo " "
-  echo -e "${red}Map transfer complete, returning to production mode.${white}" #fixme
-  echo " "
-  sshbr "'echo "Q3tm36170" | sudo -S mount -o remount /mnt/mmap'"
+#If map is needed, check partition size and copy
+badpart=0
+map_partsize=$(sshpass -f /home/emteq/.id ssh emteq@$econip 'df /mnt/mmap | tail -n 1')
+map_partsize=$(echo $map_partsize | cut -d ' ' -f 2)
+if [[ $map = 6 ]] && [[ $map_partsize < 160000000 ]]; then 
+  warning
+  badpart=1
+elif [[ $map_partsize < 14000000 ]]; then
+  warning
+  badpart=1
 fi
+if [[ $badpart = 0 ]]; then   #not elegant, but gets it done. 
+  if [ $maptrans = 1 ] && [ "$map" != "7" ]; then
+    #prepare econnect for map copy
+    echo "This process may take up to 20 minutes" #reduce time for cwr451
+    echo ""
+    echo -e "${red}\e[5mMap selected for transfer.${normal}\e[25m"
+    echo " "
+    echo "Configuring Map Partition"
+    echo ""
+    mode=1 
+    sshbr "'echo "Q3tm36170" | sudo -S mount -o remount, rw /mnt/mmap'"
+    echo " "
+    echo -e  "${red}Copying Map to eConnect${white}"
+    echo " "
+    #grant ownership to emteq
+    sshb "'echo "Q3tm36170" | sudo -S chown emteq:emteq /mnt/mmap'"
+    #delete existing map if any
+    sshb "'echo "Q3tm36170" | sudo -S rm -f /mnt/mmap/*.mbtiles'"
+    case $map in 
+      1) sshpass -f /home/emteq/.id rsync --progress "$dir"map/na.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
+      2) sshpass -f /home/emteq/.id rsync --progress "$dir"map/eu.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
+      3) sshpass -f /home/emteq/.id rsync --progress "$dir"map/me.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
+      4) sshpass -f /home/emteq/.id rsync --progress "$dir"map/sa.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
+      5) sshpass -f /home/emteq/.id rsync --progress "$dir"map/as.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
+      6) sshpass -f /home/emteq/.id rsync --progress "$dir"map/wo.mbtiles emteq@$econip:/mnt/mmap/map.mbtiles;;
+    esac
+    echo " "
+    echo -e "${red}Map transfer complete, returning to production mode.${white}" #fixme
+    echo " "
+    sshbr "'echo "Q3tm36170" | sudo -S mount -o remount /mnt/mmap'"
+  fi
   
-#deliver payload
-sshpass -f /home/emteq/.id scp $dir"payload/update_LIST_"$lot"_Factory.tgz" emteq@$econip:/mnt/user/upload/
-sshpass -f /home/emteq/.id scp $dir"payload/update_LIST_"$lot"_Factory.lst" emteq@$econip:/mnt/user/upload/
-sshpass -f /home/emteq/.id scp $confdir$lot emteq@$econip:/mnt/user/upload/.config_$lot.txt 
-#placeholder for for slideshow widget
-sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "'mkdir /mnt/user/upload/slideshow'"
-sshpass -f /home/emteq/.id scp ${dir}other/greyframe.png emteq@$econip:/mnt/user/upload/slideshow/
-sshpass -f /home/emteq/.id scp ${dir}other/README.TXT emteq@$econip:/mnt/user/upload/slideshow/
-sshpass -f /home/emteq/.id scp ${dir}other/presentation_time.txt emteq@$econip:/mnt/user/upload/slideshow/
-sshb "'echo "Q3tm36170" | sudo -S chown user:user /mnt/user/upload/slideshow -R'"
-sshb "'echo "Q3tm36170" | sudo -S chmod 666 /mnt/user/upload/slideshow/*'"
-#this is a small helper script for running updates
-sshpass -f /home/emteq/.id scp $dir"other/update" emteq@$econip:/mnt/user/upload/
-#clean up
-rm $dbstatic'update_DB_factory.sql'
-rm $dir'payload/temp/'*
-rm $dir'payload/'*
-header
-echo "eConnect is now being configured."
-echo " "
-echo -e "${red}Installing Configuration Files${white}"
-echo ""
-sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "'/mnt/user/upload/update update_LIST_"$lot"_Factory.lst'"
-echo ""
-echo -e "${red}Verifying node is up. Please Wait.${white}"
-sleep 40
-mode=0
-while [[ $mode = 0 ]] ; do
-  isup
-  mode=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
-done
-#Change date to future value to reduce time it takes for tar to complete. 
-sshbr "'echo "Q3tm36170" | sudo -S date 121220202020'" #use date of local system ***
-#verify node is up and running before alerting user
-junk=""
-while [[ $junk = "" ]];do
-  junk=$(sshbr  "'pgrep node'")
-  sleep 10
-done
-echo -e "${red}Configuration Complete${white}"
-echo ""
-echo -n "Press any key to continue"
-read junk
-header
-echo "System Configuration Complete"
-echo "If a USB map install is required then"
-echo "shutdown eConnect, insert USB thumb drive with"
-echo "required map to the IFE USB port. Apply power"
-echo "to eConnect. The eConnect will copy the necessary"
-echo "files and reboot. This process will take some time."
-echo " "
-echo "It is recommended to now set eConnect boot options."
-echo " "
-echo -n "Press any key to restart the configuration tool"
-read junk
+  #deliver payload
+  sshpass -f /home/emteq/.id scp $dir"payload/update_LIST_"$lot"_Factory.tgz" emteq@$econip:/mnt/user/upload/
+  sshpass -f /home/emteq/.id scp $dir"payload/update_LIST_"$lot"_Factory.lst" emteq@$econip:/mnt/user/upload/
+  sshpass -f /home/emteq/.id scp $confdir$lot emteq@$econip:/mnt/user/upload/.config_$lot.txt 
+  #placeholder for for slideshow widget
+  sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "'mkdir /mnt/user/upload/slideshow'"
+  sshpass -f /home/emteq/.id scp ${dir}other/greyframe.png emteq@$econip:/mnt/user/upload/slideshow/
+  sshpass -f /home/emteq/.id scp ${dir}other/README.TXT emteq@$econip:/mnt/user/upload/slideshow/
+  sshpass -f /home/emteq/.id scp ${dir}other/presentation_time.txt emteq@$econip:/mnt/user/upload/slideshow/
+  sshb "'echo "Q3tm36170" | sudo -S chown user:user /mnt/user/upload/slideshow -R'"
+  sshb "'echo "Q3tm36170" | sudo -S chmod 666 /mnt/user/upload/slideshow/*'"
+  #this is a small helper script for running updates
+  sshpass -f /home/emteq/.id scp $dir"other/update" emteq@$econip:/mnt/user/upload/
+  #clean up
+  rm $dbstatic'update_DB_factory.sql'
+  rm $dir'payload/temp/'*
+  rm $dir'payload/'*
+  header
+  echo "eConnect is now being configured."
+  echo " "
+  echo -e "${red}Installing Configuration Files${white}"
+  echo ""
+  sshpass -f /home/emteq/.id ssh emteq@$econip bash -c "'/mnt/user/upload/update update_LIST_"$lot"_Factory.lst'"
+  echo ""
+  echo -e "${red}Verifying node is up. Please Wait.${white}"
+  sleep 40
+  mode=0
+  while [[ $mode = 0 ]] ; do
+    isup
+    mode=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
+  done
+  #Change date to future value to reduce time it takes for tar to complete. 
+  sshbr "'echo "Q3tm36170" | sudo -S date 121220202020'" #use date of local system ***
+  #verify node is up and running before alerting user
+  junk=""
+  while [[ $junk = "" ]];do
+    junk=$(sshbr  "'pgrep node'")
+    sleep 10
+  done
+  echo -e "${red}Configuration Complete${white}"
+  echo ""
+  echo -n "Press any key to continue"
+  read junk
+  header
+  echo "System Configuration Complete"
+  echo "If a USB map install is required then"
+  echo "shutdown eConnect, insert USB thumb drive with"
+  echo "required map to the IFE USB port. Apply power"
+  echo "to eConnect. The eConnect will copy the necessary"
+  echo "files and reboot. This process will take some time."
+  echo " "
+  echo "It is recommended to now set eConnect boot options."
+  echo " "
+  echo -n "Press any key to restart the configuration tool"
+  read junk
+fi
 }
 
 #update encoder board
@@ -1613,16 +1644,10 @@ while : ; do
   echo "4. eConnect System Test"
   echo "5. Software Preferences"
   echo "6. Test GUI Interface"
-#  echo "7. Transmit configuration data to BE Aerospace"
+
   echo "7. Update encoder board"
   echo ""
-#  if [ $config_file_cnt -gt 5 ] ; then
-#    echo -e ${red}$config_file_cnt${white} "configuration files awaiting transmission to BE Aerospace."
-#    echo "Please ensure system has active internet connection and select option 5."
-#  else
-#    echo -e ${green}$config_file_cnt${white} "configuration file(s) awaiting transmission to BE Aerospace."
-#    echo " "
-#  fi
+
     echo -n "Please enter selection: "
     read junk
     case $junk in
@@ -1668,7 +1693,6 @@ while : ; do
         syscon
         source ./.config.cfg;;
       6) firefox 10.0.9.1;;
- #     7) sendconfig ;;
       7) encoder_update;;
       *) echo "Invalid Entry"
          echo -n "Please enter selection: ";;

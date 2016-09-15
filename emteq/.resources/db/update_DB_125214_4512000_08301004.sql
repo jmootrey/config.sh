@@ -597,7 +597,7 @@ CREATE TABLE `fms_data` (
 
 LOCK TABLES `fms_data` WRITE;
 /*!40000 ALTER TABLE `fms_data` DISABLE KEYS */;
-INSERT INTO `fms_data` VALUES (1,1,'150','GMT','hh:mm:ss',''),(2,2,'203','Altitude','Feet',''),(3,2,'204','Altitude - Corrected','Feet',''),(4,3,'205','Mach','Mach',''),(27,23,'353','Destination GMT offset','+/-hh:mm:ss',''),(5,4,'210','Airspeed','Knots',''),(6,5,'212','Vertical Speed','Feet/Min',''),(7,6,'310','Latitude','Degrees',''),(8,7,'311','Longitude','Degrees',''),(9,8,'312','Ground Speed','Knots',''),(10,9,'313','Track Angle','Degrees',''),(11,10,'314','True Heading','Degrees',' '),(12,11,'315','Wind Speed','Knots',''),(13,12,'316','Wind Direction','Degrees',''),(14,13,'213','Air temperature','Deg C',''),(15,14,'351','Distance to Destination','Nautical Miles',''),(16,15,'352','Time to Destination','Minutes',''),(17,16,'361','Origin Airport - part 1','Code',''),(18,17,'362','Origin Airport - part 2','Code',''),(20,19,'364','Destination Airport - part 2','Code',''),(19,18,'365','Destination Airport - part 1','Code',''),(21,10,'320','Magnetic Heading','Degrees',''),(26,22,'371','Equiptment Info','Text',''),(25,21,'074','Flight Plan Records','Count',''),(22,20,'260','Date','dd/mm/yy',''),(23,14,'251','Distance to Destination','Nautical Miles',''),(24,15,'252','Time to Destination','Minutes',''),(28,40,'275','Cabin ECS Cntl','boolean',''),(30,42,'272','Actual Cabin Zone Temperature','Kelvin',''),(31,43,'275','Cabin Vent Fan Speed','Count (0 - 7)',''),(32,44,'271','Commanded Cabin Zone Temperature','Kelvin',''),(34,46,'61','Origin and Destination 1','Code',''),(35,47,'62','Origin and Destination 2','Code',''),(36,48,'63','Origin and Destination 3','Code',''),(37,49,'275','Aircraft WOW','boolean',''),(29,41,'275','Cabin Lighting Control','boolean','');
+INSERT INTO `fms_data` VALUES (1,1,'150','GMT','hh:mm:ss','17'),(2,2,'203','Altitude','Feet','5358'),(3,2,'204','Altitude - Corrected','Feet','5523'),(4,3,'205','Mach','Mach','0'),(27,23,'353','Destination GMT offset','+/-hh:mm:ss',''),(5,4,'210','Airspeed','Knots','0'),(6,5,'212','Vertical Speed','Feet/Min',''),(7,6,'310','Latitude','Degrees','  39.909'),(8,7,'311','Longitude','Degrees','-105.117'),(9,8,'312','Ground Speed','Knots','0'),(10,9,'313','Track Angle','Degrees','0'),(12,11,'315','Wind Speed','Knots','0'),(13,12,'316','Wind Direction','Degrees','0'),(14,13,'213','Air temperature','Deg C','24'),(15,14,'351','Distance to Destination','Nautical Miles','422'),(16,15,'352','Time to Destination','Minutes','108'),(17,16,'361','Origin Airport - part 1','Code',''),(18,17,'362','Origin Airport - part 2','Code',''),(20,19,'364','Destination Airport - part 2','Code',''),(19,18,'365','Destination Airport - part 1','Code',''),(21,10,'320','Magnetic Heading','Degrees','266'),(26,22,'371','Equiptment Info','Text',''),(25,21,'074','Flight Plan Records','Count','15'),(22,20,'260','Date','dd/mm/yy','9'),(23,14,'251','Distance to Destination','Nautical Miles','27'),(24,15,'252','Time to Destination','Minutes','7'),(28,40,'275','Cabin ECS Cntl','boolean',''),(30,42,'272','Actual Cabin Zone Temperature','Kelvin',''),(31,43,'275','Cabin Vent Fan Speed','Count (0 - 7)',''),(32,44,'271','Commanded Cabin Zone Temperature','Kelvin',''),(34,46,'61','Origin and Destination 1','Code',''),(35,47,'62','Origin and Destination 2','Code',''),(36,48,'63','Origin and Destination 3','Code',''),(37,49,'275','Aircraft WOW','boolean',''),(29,41,'275','Cabin Lighting Control','boolean','');
 /*!40000 ALTER TABLE `fms_data` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -610,12 +610,6 @@ UNLOCK TABLES;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `fms_data_BUPD` BEFORE UPDATE ON `fms_data` FOR EACH ROW begin
-if new.arinc_label=311 AND new.value < 0 then
-  set new.value=-180-new.value;
-end if;
-IF new.arinc_label=310 AND new.value  < 0 THEN
-  set new.value=-180-new.value;
-end if;
 IF new.arinc_label=320 AND new.value < 0 THEN
  set new.value=180-new.value;
 end if;
@@ -629,6 +623,14 @@ IF new.arinc_label=316 AND new.value < 0 THEN
 end if;
 IF new.arinc_label=213 AND new.value < 0 THEN
   set new.value=round(-1 * ( new.value + 512 ));
+IF new.arinc_label=205 THEN
+  set new.value=round(new.value, 2);
+end if;
+IF new.arinc_label!=205 AND new.arinc_label!=310 AND new.arinc_label!=311 THEN
+  set new.value=round(new.value);
+end if;
+
+
 end if;
 end */;;
 DELIMITER ;
@@ -2626,7 +2628,7 @@ CREATE TABLE `web_supported_browsers` (
 
 LOCK TABLES `web_supported_browsers` WRITE;
 /*!40000 ALTER TABLE `web_supported_browsers` DISABLE KEYS */;
-INSERT INTO `web_supported_browsers` VALUES (1,'Mac OS X','6.1','Safari'),(2,'Mac OS X','34','Chrome'),(3,'Windows 8','11','IE'),(4,'Windows 8','34','Chrome'),(5,'Windows 8','28','Firefox'),(6,'iOS','7','Mobile Safari'),(7,'iOS','33','Chrome Mobile iOS'),(8,'Android','33','Chrome Mobile'),(9,'Android','4','Android'),(10,'Windows 7','11','IE'),(11,'Windows 7','34','Chrome'),(12,'Windows 7','28','Firefox'),(13,'Windows XP','11','IE'),(14,'Windows XP','34','Chrome'),(15,'Windows XP','28','Firefox'),(16,'Windows 8.1','11','IE'),(17,'Windows 8.1','34','Chrome'),(18,'Windows 8.1','28','Firefox'),(19,'Android','33','Chrome'),(20,'Android','5','Mozilla');
+INSERT INTO `web_supported_browsers` VALUES (1,'Mac OS X','6.1','Safari'),(2,'Mac OS X','34','Chrome'),(3,'Windows 8','11','IE'),(4,'Windows 8','34','Chrome'),(5,'Windows 8','28','Firefox'),(6,'iOS','7','Mobile Safari'),(7,'iOS','33','Chrome Mobile iOS'),(8,'Android','33','Chrome Mobile'),(9,'Android','4','Android'),(10,'Windows 7','11','IE'),(11,'Windows 7','34','Chrome'),(12,'Windows 7','28','Firefox'),(13,'Windows XP','11','IE'),(14,'Windows XP','34','Chrome'),(15,'Windows XP','28','Firefox'),(16,'Windows 8.1','11','IE'),(17,'Windows 8.1','34','Chrome'),(18,'Windows 8.1','28','Firefox'),(19,'Android','33','Chrome'),(20,'Android','5','Mozilla'),(21,'Windows',34,'Chrome'),(22,'Widnows',28,'Firefox'),(23,'Windows',11,'IE');
 /*!40000 ALTER TABLE `web_supported_browsers` ENABLE KEYS */;
 UNLOCK TABLES;
 
