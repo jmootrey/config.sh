@@ -1,4 +1,4 @@
--- MySQL dump 10.16  Distrib 10.1.16-MariaDB, for Linux (x86_64)
+BUP-- MySQL dump 10.16  Distrib 10.1.16-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: econnect
 -- ------------------------------------------------------
@@ -512,7 +512,7 @@ CREATE TABLE `econnect_config` (
 
 LOCK TABLES `econnect_config` WRITE;
 /*!40000 ALTER TABLE `econnect_config` DISABLE KEYS */;
-INSERT INTO `econnect_config` VALUES (1,0,'10.0.9.2',' ',1,1,1,1,0),(2,0,'10.0.9.1',' ', 1,1,1,1,0);
+INSERT INTO `econnect_config` VALUES (1,0,'10.0.9.2',' ',1,1,1,1,0),(2,0,'10.0.9.1',' ',1,1,1,1,0);
 /*!40000 ALTER TABLE `econnect_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -598,7 +598,6 @@ CREATE TABLE `fms_data` (
 LOCK TABLES `fms_data` WRITE;
 /*!40000 ALTER TABLE `fms_data` DISABLE KEYS */;
 INSERT INTO `fms_data` VALUES (1,1,'150','GMT','hh:mm:ss','17'),(2,2,'203','Altitude','Feet','5358'),(3,2,'204','Altitude - Corrected','Feet','5523'),(4,3,'205','Mach','Mach','0'),(27,23,'353','Destination GMT offset','+/-hh:mm:ss',''),(5,4,'210','Airspeed','Knots','0'),(6,5,'212','Vertical Speed','Feet/Min',''),(7,6,'310','Latitude','Degrees','  39.909'),(8,7,'311','Longitude','Degrees','-105.117'),(9,8,'312','Ground Speed','Knots','0'),(10,9,'313','Track Angle','Degrees','0'),(12,11,'315','Wind Speed','Knots','0'),(13,12,'316','Wind Direction','Degrees','0'),(14,13,'213','Air temperature','Deg C','24'),(15,14,'351','Distance to Destination','Nautical Miles','422'),(16,15,'352','Time to Destination','Minutes','108'),(17,16,'361','Origin Airport - part 1','Code',''),(18,17,'362','Origin Airport - part 2','Code',''),(20,19,'364','Destination Airport - part 2','Code',''),(19,18,'365','Destination Airport - part 1','Code',''),(21,10,'320','Magnetic Heading','Degrees','266'),(26,22,'371','Equiptment Info','Text',''),(25,21,'074','Flight Plan Records','Count','15'),(22,20,'260','Date','dd/mm/yy','9'),(23,14,'251','Distance to Destination','Nautical Miles','27'),(24,15,'252','Time to Destination','Minutes','7'),(28,40,'275','Cabin ECS Cntl','boolean',''),(30,42,'272','Actual Cabin Zone Temperature','Kelvin',''),(31,43,'275','Cabin Vent Fan Speed','Count (0 - 7)',''),(32,44,'271','Commanded Cabin Zone Temperature','Kelvin',''),(34,46,'61','Origin and Destination 1','Code',''),(35,47,'62','Origin and Destination 2','Code',''),(36,48,'63','Origin and Destination 3','Code',''),(37,49,'275','Aircraft WOW','boolean',''),(29,41,'275','Cabin Lighting Control','boolean','');
-
 /*!40000 ALTER TABLE `fms_data` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -611,24 +610,15 @@ UNLOCK TABLES;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `fms_data_BUPD` BEFORE UPDATE ON `fms_data` FOR EACH ROW begin
-IF new.arinc_label=320 AND new.value < 0 THEN
- set new.value=180-new.value;
-end if;
-If new.arinc_label=320 AND new.value = 0 THEN
-  if old.value > 170 AND old.value < 190 THEN
-    set new.value = 180;
-  end if;
-end if;
-IF new.arinc_label=316 AND new.value < 0 THEN
-  set new.value=180-new.value;
-end if;
 IF new.arinc_label=213 AND new.value < 0 THEN
   set new.value=round(-1 * ( new.value + 512 ));
 end if;
 IF new.arinc_label=205 THEN
   set new.value=round(new.value, 2);
 end if;
-IF new.arinc_label!=205 AND new.arinc_label!=310 AND new.arinc_label!=311 THEN
+IF new.arinc_label=320 AND new.value < 0 THEN
+  set new.value=(360+new.value);
+IF new.arinc_label!=205 AND new.arinc_label!=310 AND new.arinc_label!=311 AND new.arinc_label!=150 THEN
   set new.value=round(new.value);
 end if;
 end */;;
@@ -1345,7 +1335,6 @@ CREATE TABLE `rs485_config` (
 
 LOCK TABLES `rs485_config` WRITE;
 /*!40000 ALTER TABLE `rs485_config` DISABLE KEYS */;
-INSERT INTO `rs485_config` VALUES (1,1,1,0,9600,0,8,2,0,1);
 /*!40000 ALTER TABLE `rs485_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1856,7 +1845,7 @@ CREATE TABLE `system_config` (
 
 LOCK TABLES `system_config` WRITE;
 /*!40000 ALTER TABLE `system_config` DISABLE KEYS */;
-INSERT INTO `system_config` VALUES (1,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0),(2,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0);
+INSERT INTO `system_config` VALUES (1,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0),(2,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `system_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2578,7 +2567,7 @@ CREATE TABLE `web_pages` (
 
 LOCK TABLES `web_pages` WRITE;
 /*!40000 ALTER TABLE `web_pages` DISABLE KEYS */;
-INSERT INTO `web_pages` VALUES (1,1,1,'Home','',1,0),(2,1,9,'Media','',2,0),(3,1,8,'Map','',6,0),(4,1,7,'Maintenance','',7,0),(5,1,12,'File Manager','',8,0),(6,1,4,'Video','',3,0),(7,1,5,'Audio','',4,0),(8,1,13,'XM','',5,0);
+INSERT INTO `web_pages` VALUES (1,1,1,'Home','',1,0),(2,1,9,'Media','',2,0),(3,1,8,'Map','',6,0),(4,1,7,'Maintenance','',7,0),(5,1,12,'File Manager','',8,0),(6,1,4,'Video','',3,0),(7,1,5,'Audio','',4,0),(8,1,13,'XM','\0',5,0);
 /*!40000 ALTER TABLE `web_pages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2628,7 +2617,7 @@ CREATE TABLE `web_supported_browsers` (
 
 LOCK TABLES `web_supported_browsers` WRITE;
 /*!40000 ALTER TABLE `web_supported_browsers` DISABLE KEYS */;
-INSERT INTO `web_supported_browsers` VALUES (1,'Mac OS X','6.1','Safari'),(2,'Mac OS X','34','Chrome'),(3,'Windows 8','11','IE'),(4,'Windows 8','34','Chrome'),(5,'Windows 8','28','Firefox'),(6,'iOS','7','Mobile Safari'),(7,'iOS','33','Chrome Mobile iOS'),(8,'Android','33','Chrome Mobile'),(9,'Android','4','Android'),(10,'Windows 7','11','IE'),(11,'Windows 7','34','Chrome'),(12,'Windows 7','28','Firefox'),(13,'Windows XP','11','IE'),(14,'Windows XP','34','Chrome'),(15,'Windows XP','28','Firefox'),(16,'Windows 8.1','11','IE'),(17,'Windows 8.1','34','Chrome'),(18,'Windows 8.1','28','Firefox'),(19,'Android','33','Chrome'),(20,'Android','5','Mozilla'),(21,'Windows',11,'IE'),(22,'Windows',34,'Chrome'),(23,'Windows',28,'Firefox');
+INSERT INTO `web_supported_browsers` VALUES (1,'Mac OS X','6.1','Safari'),(2,'Mac OS X','34','Chrome'),(3,'Windows 8','11','IE'),(4,'Windows 8','34','Chrome'),(5,'Windows 8','28','Firefox'),(6,'iOS','7','Mobile Safari'),(7,'iOS','33','Chrome Mobile iOS'),(8,'Android','33','Chrome Mobile'),(9,'Android','4','Android'),(10,'Windows 7','11','IE'),(11,'Windows 7','34','Chrome'),(12,'Windows 7','28','Firefox'),(13,'Windows XP','11','IE'),(14,'Windows XP','34','Chrome'),(15,'Windows XP','28','Firefox'),(16,'Windows 8.1','11','IE'),(17,'Windows 8.1','34','Chrome'),(18,'Windows 8.1','28','Firefox'),(19,'Android','33','Chrome'),(20,'Android','5','Mozilla'),(21,'Windows',34,'Chrome'),(22,'Widnows',28,'Firefox'),(23,'Windows',11,'IE');
 /*!40000 ALTER TABLE `web_supported_browsers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2980,7 +2969,6 @@ CREATE TABLE `xm_config` (
 
 LOCK TABLES `xm_config` WRITE;
 /*!40000 ALTER TABLE `xm_config` DISABLE KEYS */;
-INSERT INTO `xm_config` VALUES (1,1,1,1);
 /*!40000 ALTER TABLE `xm_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3058,4 +3046,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-09-01 12:50:40
+-- Dump completed on 2016-09-01 12:48:07

@@ -36,7 +36,6 @@ CREATE TABLE `alto_amp_config` (
 
 LOCK TABLES `alto_amp_config` WRITE;
 /*!40000 ALTER TABLE `alto_amp_config` DISABLE KEYS */;
-INSERT INTO `alto_amp_config` VALUES (1,1,2);
 /*!40000 ALTER TABLE `alto_amp_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -61,7 +60,6 @@ CREATE TABLE `alto_amp_inputs` (
 
 LOCK TABLES `alto_amp_inputs` WRITE;
 /*!40000 ALTER TABLE `alto_amp_inputs` DISABLE KEYS */;
-INSERT INTO `alto_amp_inputs` VALUES (1,1,0),(2,2,1),(3,3,2),(4,4,3);
 /*!40000 ALTER TABLE `alto_amp_inputs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -90,7 +88,6 @@ CREATE TABLE `alto_amp_outputs` (
 
 LOCK TABLES `alto_amp_outputs` WRITE;
 /*!40000 ALTER TABLE `alto_amp_outputs` DISABLE KEYS */;
-INSERT INTO `alto_amp_outputs` VALUES (1,1,0,50,0,11,6),(2,2,0,50,0,11,6),(3,3,0,50,0,11,6),(4,4,0,50,0,11,6),(5,0,1,2,0,9,6);
 /*!40000 ALTER TABLE `alto_amp_outputs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -512,7 +509,7 @@ CREATE TABLE `econnect_config` (
 
 LOCK TABLES `econnect_config` WRITE;
 /*!40000 ALTER TABLE `econnect_config` DISABLE KEYS */;
-INSERT INTO `econnect_config` VALUES (1,0,'10.0.9.2',' ',1,1,1,1,0),(2,0,'10.0.9.1',' ',1,1,1,1,0);
+INSERT INTO `econnect_config` VALUES (1,1,'10.0.9.2','00:0e:8e:69:78:62',1,3,0,1,0);
 /*!40000 ALTER TABLE `econnect_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -569,7 +566,7 @@ CREATE TABLE `fms_config` (
 
 LOCK TABLES `fms_config` WRITE;
 /*!40000 ALTER TABLE `fms_config` DISABLE KEYS */;
-INSERT INTO `fms_config` VALUES (1,0,2,0,3,0,3);
+INSERT INTO `fms_config` VALUES (1,1,0,2,0,3,3);
 /*!40000 ALTER TABLE `fms_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -598,6 +595,7 @@ CREATE TABLE `fms_data` (
 LOCK TABLES `fms_data` WRITE;
 /*!40000 ALTER TABLE `fms_data` DISABLE KEYS */;
 INSERT INTO `fms_data` VALUES (1,1,'150','GMT','hh:mm:ss','17'),(2,2,'203','Altitude','Feet','5358'),(3,2,'204','Altitude - Corrected','Feet','5523'),(4,3,'205','Mach','Mach','0'),(27,23,'353','Destination GMT offset','+/-hh:mm:ss',''),(5,4,'210','Airspeed','Knots','0'),(6,5,'212','Vertical Speed','Feet/Min',''),(7,6,'310','Latitude','Degrees','  39.909'),(8,7,'311','Longitude','Degrees','-105.117'),(9,8,'312','Ground Speed','Knots','0'),(10,9,'313','Track Angle','Degrees','0'),(12,11,'315','Wind Speed','Knots','0'),(13,12,'316','Wind Direction','Degrees','0'),(14,13,'213','Air temperature','Deg C','24'),(15,14,'351','Distance to Destination','Nautical Miles','422'),(16,15,'352','Time to Destination','Minutes','108'),(17,16,'361','Origin Airport - part 1','Code',''),(18,17,'362','Origin Airport - part 2','Code',''),(20,19,'364','Destination Airport - part 2','Code',''),(19,18,'365','Destination Airport - part 1','Code',''),(21,10,'320','Magnetic Heading','Degrees','266'),(26,22,'371','Equiptment Info','Text',''),(25,21,'074','Flight Plan Records','Count','15'),(22,20,'260','Date','dd/mm/yy','9'),(23,14,'251','Distance to Destination','Nautical Miles','27'),(24,15,'252','Time to Destination','Minutes','7'),(28,40,'275','Cabin ECS Cntl','boolean',''),(30,42,'272','Actual Cabin Zone Temperature','Kelvin',''),(31,43,'275','Cabin Vent Fan Speed','Count (0 - 7)',''),(32,44,'271','Commanded Cabin Zone Temperature','Kelvin',''),(34,46,'61','Origin and Destination 1','Code',''),(35,47,'62','Origin and Destination 2','Code',''),(36,48,'63','Origin and Destination 3','Code',''),(37,49,'275','Aircraft WOW','boolean',''),(29,41,'275','Cabin Lighting Control','boolean','');
+
 /*!40000 ALTER TABLE `fms_data` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -607,32 +605,22 @@ UNLOCK TABLES;
 /*!50003 SET character_set_results = utf8 */ ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = '' */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `fms_data_BUPD` BEFORE UPDATE ON `fms_data` FOR EACH ROW begin
-IF new.arinc_label=320 AND new.value < 0 THEN
- set new.value=180-new.value;
-end if;
-If new.arinc_label=320 AND new.value = 0 THEN
-  if old.value > 170 AND old.value < 190 THEN
-    set new.value = 180;
-  end if;
-end if;
-IF new.arinc_label=316 AND new.value < 0 THEN
-  set new.value=180-new.value;
-end if;
 IF new.arinc_label=213 AND new.value < 0 THEN
   set new.value=round(-1 * ( new.value + 512 ));
+end if;
 IF new.arinc_label=205 THEN
   set new.value=round(new.value, 2);
 end if;
-IF new.arinc_label!=205 AND new.arinc_label!=310 AND new.arinc_label!=311 THEN
+IF new.arinc_label=320 AND new.value < 0 THEN
+  set new.value=(360+new.value);
+IF new.arinc_label!=205 AND new.arinc_label!=310 AND new.arinc_label!=311 AND new.arinc_label!=150 THEN
   set new.value=round(new.value);
 end if;
-
-
-end if;
 end */;;
+
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -673,16 +661,20 @@ UNLOCK TABLES;
 /*!50003 SET character_set_results = utf8 */ ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = '' */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `fms_flight_plan_BINS` BEFORE INSERT ON `fms_flight_plan` FOR EACH ROW begin
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER econnect.flight_plan
+BEFORE INSERT
+ON econnect.fms_flight_plan FOR EACH ROW
+BEGIN
 IF new.longitude<0 THEN
   SET new.longitude=-180-new.longitude;
   end if;
 IF new.latitude<0 THEN
   SET new.latitude=-180-new.latitude;
   end if;
-end */;;
+
+END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -743,7 +735,7 @@ CREATE TABLE `input_config` (
 
 LOCK TABLES `input_config` WRITE;
 /*!40000 ALTER TABLE `input_config` DISABLE KEYS */;
-INSERT INTO `input_config` VALUES (1,1,0,0,0,0,0),(2,1,0,0,0,0,0),(3,1,0,0,0,0,0),(4,1,0,0,0,0,0),(5,1,0,0,0,0,0),(6,1,0,0,0,0,0),(7,1,0,0,0,0,0);
+INSERT INTO `input_config` VALUES (1,1,1,0,1,0,1),(2,1,1,0,2,0,1),(3,1,1,0,3,0,1),(4,1,0,0,0,0,0),(5,1,0,0,0,0,0),(6,1,0,0,0,0,0),(7,1,0,0,0,0,0);
 /*!40000 ALTER TABLE `input_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -833,7 +825,7 @@ CREATE TABLE `lighting_io_config` (
 
 LOCK TABLES `lighting_io_config` WRITE;
 /*!40000 ALTER TABLE `lighting_io_config` DISABLE KEYS */;
-INSERT INTO `lighting_io_config` VALUES (4,1,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,4,-1),(3,1,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,3,-1),(2,1,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,2,-1),(1,1,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1),(5,2,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(6,3,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1);
+INSERT INTO `lighting_io_config` VALUES (11,3,0,1024,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(10,3,0,1536,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(9,3,0,2304,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(8,2,0,128,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(7,2,0,64,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(6,2,0,32,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(5,2,0,16,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(4,1,0,8,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(3,1,0,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(2,1,0,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(1,1,0,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(12,3,0,2048,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(13,1,0,4095,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(14,1,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(15,2,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(16,3,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(17,1,0,49,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),(18,1,0,66,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1);
 /*!40000 ALTER TABLE `lighting_io_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -893,7 +885,7 @@ CREATE TABLE `lighting_io_installed` (
 
 LOCK TABLES `lighting_io_installed` WRITE;
 /*!40000 ALTER TABLE `lighting_io_installed` DISABLE KEYS */;
-INSERT INTO `lighting_io_installed` VALUES (2,1,253,'ESP',6,80,-1,0,0),(1,1,254,'SPN',4,64,-1,0,0),(3,1,252,'LSP',6,64,-1,0,0);
+INSERT INTO `lighting_io_installed` VALUES (1,1,92,'NC1',1,1,-1,0,1),(2,1,92,'NC2',1,2,-1,0,1),(3,1,92,'NC3',1,3,-1,0,0);
 /*!40000 ALTER TABLE `lighting_io_installed` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -926,7 +918,7 @@ CREATE TABLE `lighting_io_modes` (
 
 LOCK TABLES `lighting_io_modes` WRITE;
 /*!40000 ALTER TABLE `lighting_io_modes` DISABLE KEYS */;
-INSERT INTO `lighting_io_modes` VALUES (1,1,0,'on',1,1,0,0,0,0,0),(2,1,0,'on',3,1,0,0,0,0,0),(3,1,0,'on',5,1,0,0,0,0,0),(4,1,0,'on',7,1,0,0,0,0,0),(5,2,0,'off',1,0,0,0,0,0,0),(6,2,0,'off',3,0,0,0,0,0,0),(7,2,0,'off',5,0,0,0,0,0,0),(8,2,0,'off',7,0,0,0,0,0,0);
+INSERT INTO `lighting_io_modes` VALUES (1,1,0,'on',1,1,0,0,0,0,0),(2,1,0,'on',3,1,0,0,0,0,0),(3,1,0,'on',5,1,0,0,0,0,0),(4,1,0,'on',7,1,0,0,0,0,0),(5,2,0,'off',1,0,0,0,0,0,0),(6,2,0,'off',3,0,0,0,0,0,0),(7,2,0,'off',5,0,0,0,0,0,0),(8,2,0,'off',7,0,0,0,0,0,0),(9,3,0,'half',30,1,0,0,0,0,0);
 /*!40000 ALTER TABLE `lighting_io_modes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1006,7 +998,7 @@ CREATE TABLE `lighting_io_settings` (
 
 LOCK TABLES `lighting_io_settings` WRITE;
 /*!40000 ALTER TABLE `lighting_io_settings` DISABLE KEYS */;
-INSERT INTO `lighting_io_settings` VALUES (5,5,4,7,4,'ENV',64,0,0,'TEMP DOWN',0,1,1,0,'Temp UP',0,1,0,0,'Fan Down',0,1,0,0,'Fan UP',0,1,0,0,'',-1,-1,-1,-1),(4,4,2,6,0,'SHADE4',0,0,1,'',0,0,0,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1),(3,3,2,6,0,'SHADE3',0,0,1,'',0,0,0,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1),(2,2,2,6,0,'SHADE2',0,0,1,'',0,0,0,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1),(1,1,2,6,0,'SHADE1',0,0,1,'',0,0,0,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1,'-1',-1,-1,-1,-1),(6,6,4,1,4,'Cabin Lights',5,0,0,'ENTRY',0,1,1,0,'Cabin',0,1,0,0,'Accent',0,1,0,0,'Night',0,1,0,0,'-1',-1,-1,-1,-1);
+INSERT INTO `lighting_io_settings` VALUES (1,1,5,1,1,'1/0 Entry Wash',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(2,1,5,1,5,'Int Entry Wash',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(3,2,5,1,1,'1/0 Entry Spot',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(4,2,5,1,5,'Int Entry Spot',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(5,3,5,1,1,'Reserved',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(6,3,5,1,5,'Reserved',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(7,4,5,1,1,'Reserved',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(8,4,5,1,5,'Reserved',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(23,12,5,1,1,'1/0 Win RH',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(21,11,5,1,1,'1/0 Table RH',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(19,10,5,1,1,'1/0 Table LH',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(17,9,5,1,1,'1/0 Win LH',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(15,8,5,1,1,'Reserved',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(13,7,5,1,1,'1/0 Spot',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(11,6,5,1,1,'1/0 Downwash',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(9,5,5,1,1,'1/0 Upwash',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(10,5,5,1,5,'Int Upwash',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(12,6,5,1,5,'Int Downwash',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(14,7,5,1,5,'Int Spot',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(16,8,5,1,5,'Reserved',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(18,9,5,1,5,'Int Win LH',16,0,0,'Intensity',0,65535,0,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(20,10,5,1,5,'Int Table LH',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(22,11,5,1,5,'Int Table RH',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(24,12,5,1,5,'Int Win RH',16,0,0,'Intensity',0,65535,35000,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(25,13,5,1,1,'ALL',31,1,0,'Fade',0,255,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0,'',0,0,0,0),(26,13,5,1,5,'ALL',16,0,0,'Intensity',0,65535,65535,0,'X',0,65535,0,0,'Y',0,65535,0,0,'Bit Mask',0,255,0,0,'Fade',0,255,0,0),(27,14,5,1,3,'NC1 Set Param',2,1,0,'Parameter ID',0,65535,0,0,'Byte Count',0,65535,0,0,'Param Value',0,65535,0,0,'0',0,0,0,0,'0',0,0,0,0),(28,15,5,1,3,'NC2 Set param',2,1,0,'Parameter ID',0,65535,0,0,'Byte Count',0,65535,0,0,'Param Value',0,65535,0,0,'0',0,0,0,0,'0',0,0,0,0),(29,16,5,1,3,'NC3 Set Param',2,1,0,'Parameter ID',0,65535,0,0,'Byte Count',0,65535,0,0,'Param Value',0,65535,0,0,'0',0,0,0,0,'0',0,0,0,0),(30,17,5,1,1,'GP1EntCabWash',16,0,0,'Intensity',0,65535,32767,0,'',0,0,65535,0,'',0,0,65535,0,'',0,0,0,0,'',0,0,255,0),(31,18,5,1,1,'GP1SpotOFF',31,1,0,'Fade',0,255,255,0,'',0,0,0,0,'0',0,0,0,0,'0',0,0,0,0,'0',0,0,0,0);
 /*!40000 ALTER TABLE `lighting_io_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1098,7 +1090,7 @@ CREATE TABLE `local_video` (
 
 LOCK TABLES `local_video` WRITE;
 /*!40000 ALTER TABLE `local_video` DISABLE KEYS */;
-INSERT INTO `local_video` VALUES (65537,1,'test_720','/mnt/user/local/test_720.mov',1,1),(65538,1,'test','/mnt/user/local/test.mov',1,1),(65539,1,'test_1080','/mnt/user/local/test_1080.mov',1,1),(65540,1,'test_720','/mnt/user/local/test_720.avi',1,0),(65541,1,'test_1080','/mnt/user/local/test_1080.avi',1,0);
+INSERT INTO `local_video` VALUES (65537,1,'test','/mnt/user/local/test.mov',1,1),(65538,1,'test_720','/mnt/user/local/test_720.mov',1,1),(65539,1,'test_1080','/mnt/user/local/test_1080.mov',1,1),(65540,1,'test_720','/mnt/user/local/test_720.avi',1,0),(65541,1,'test_1080','/mnt/user/local/test_1080.avi',1,0);
 /*!40000 ALTER TABLE `local_video` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1156,7 +1148,7 @@ CREATE TABLE `media_status` (
 
 LOCK TABLES `media_status` WRITE;
 /*!40000 ALTER TABLE `media_status` DISABLE KEYS */;
-INSERT INTO `media_status` VALUES (1,0,0,0,5,12,6,0,0),(2,0,0,0,0,0,0,0,0);
+INSERT INTO `media_status` VALUES (1,0,0,0,5,14,4,0,0),(2,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `media_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1185,7 +1177,6 @@ CREATE TABLE `net_displays` (
 
 LOCK TABLES `net_displays` WRITE;
 /*!40000 ALTER TABLE `net_displays` DISABLE KEYS */;
-INSERT INTO `net_displays` VALUES ('10.0.9.101',2,83,60,'DSK_201212 0.2.4',47,''),('10.0.9.104',5,83,60,'DSK_201212 0.2.4',45,''),('10.0.9.103',4,83,60,'DSK_201212 0.2.4',48,''),('10.0.9.102',3,83,60,'DSK_201212 0.2.4',47,''),('10.0.9.100',1,83,60,'DSK_201212 0.2.4',48,'');
 /*!40000 ALTER TABLE `net_displays` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1236,7 +1227,7 @@ CREATE TABLE `pcc_config` (
 
 LOCK TABLES `pcc_config` WRITE;
 /*!40000 ALTER TABLE `pcc_config` DISABLE KEYS */;
-INSERT INTO `pcc_config` VALUES (1,0,0,0,0);
+INSERT INTO `pcc_config` VALUES (1,2,0,2,0);
 /*!40000 ALTER TABLE `pcc_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1261,7 +1252,7 @@ CREATE TABLE `pcc_status` (
 
 LOCK TABLES `pcc_status` WRITE;
 /*!40000 ALTER TABLE `pcc_status` DISABLE KEYS */;
-INSERT INTO `pcc_status` VALUES (1,20.0,20.0);
+INSERT INTO `pcc_status` VALUES (1,21.0,21.0);
 /*!40000 ALTER TABLE `pcc_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1346,6 +1337,7 @@ CREATE TABLE `rs485_config` (
 
 LOCK TABLES `rs485_config` WRITE;
 /*!40000 ALTER TABLE `rs485_config` DISABLE KEYS */;
+INSERT INTO `rs485_config` VALUES (2,1,1,0,57600,0,8,1,2,0),(3,2,1,0,57600,0,8,1,0,0),(4,3,1,0,9600,0,8,2,2,0);
 /*!40000 ALTER TABLE `rs485_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1376,7 +1368,7 @@ CREATE TABLE `scene_scripts` (
 
 LOCK TABLES `scene_scripts` WRITE;
 /*!40000 ALTER TABLE `scene_scripts` DISABLE KEYS */;
-INSERT INTO `scene_scripts` VALUES (65537,1,23,'/opt/scenes/c2ver.sh','',0,0,1,0),(65538,1,31,'/opt/scenes/ss_recover.sh','',1,0,1,0),(65539,1,20,'/opt/scenes/mmap_update.sh','',1,0,1,0),(65540,1,22,'/opt/scenes/usb_fix.sh','',0,0,1,0),(65541,1,30,'/opt/scenes/watchnd.sh','',1,0,1,0);
+INSERT INTO `scene_scripts` VALUES (65537,1,3,'/opt/scenes/gp3_lights_on.sh','',0,0,0,0),(65538,1,20,'/opt/scenes/mmap_update.sh','',1,0,1,0),(65539,1,2,'/opt/scenes/gp2_lights_off.sh','',0,0,0,0),(65540,1,22,'/opt/scenes/usb_fix.sh','',0,0,1,0),(65541,1,1,'/opt/scenes/gp1_lights_half.sh','',0,0,0,0);
 /*!40000 ALTER TABLE `scene_scripts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1435,7 +1427,7 @@ CREATE TABLE `sensor_status` (
 
 LOCK TABLES `sensor_status` WRITE;
 /*!40000 ALTER TABLE `sensor_status` DISABLE KEYS */;
-INSERT INTO `sensor_status` VALUES (1,47.75,-20,85,45.375,-20,85,0,-20,85,45,-20,105,45,-20,105,1.2,1.1645,1.2248,1.83,1.7468,1.8372,2.52672,2.3649,2.6027,3.347043,3.1861,3.4646,4.956294,4.7651,5.2127,12.896371,12.2695,13.7749,27.434,19.2151,32.6656);
+INSERT INTO `sensor_status` VALUES (1,39,-20,85,36.875,-20,85,0,-20,85,40,-20,105,42,-20,105,1.2,1.1645,1.2248,1.82,1.7468,1.8372,2.51356,2.3649,2.6027,3.329701,3.1861,3.4646,4.956294,4.7651,5.2127,13.046329,12.2695,13.7749,26.796,19.2151,32.6656);
 /*!40000 ALTER TABLE `sensor_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1645,7 +1637,6 @@ CREATE TABLE `spn_input_status` (
 
 LOCK TABLES `spn_input_status` WRITE;
 /*!40000 ALTER TABLE `spn_input_status` DISABLE KEYS */;
-INSERT INTO `spn_input_status` VALUES (1,1,0,128,128,128);
 /*!40000 ALTER TABLE `spn_input_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1730,7 +1721,6 @@ CREATE TABLE `spn_versions` (
 
 LOCK TABLES `spn_versions` WRITE;
 /*!40000 ALTER TABLE `spn_versions` DISABLE KEYS */;
-INSERT INTO `spn_versions` VALUES (1,0,0,0,0,0);
 /*!40000 ALTER TABLE `spn_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1787,7 +1777,7 @@ CREATE TABLE `system_av_status` (
 
 LOCK TABLES `system_av_status` WRITE;
 /*!40000 ALTER TABLE `system_av_status` DISABLE KEYS */;
-INSERT INTO `system_av_status` VALUES (1,0,50,0,0,0,1,100),(2,0,0,0,0,0,0,0);
+INSERT INTO `system_av_status` VALUES (1,0,2,0,0,0,1,100),(2,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `system_av_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1856,7 +1846,7 @@ CREATE TABLE `system_config` (
 
 LOCK TABLES `system_config` WRITE;
 /*!40000 ALTER TABLE `system_config` DISABLE KEYS */;
-INSERT INTO `system_config` VALUES (1,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0),(2,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0);
+INSERT INTO `system_config` VALUES (1,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,0,0,0,1);
 /*!40000 ALTER TABLE `system_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1911,7 +1901,7 @@ CREATE TABLE `system_status_flags` (
 
 LOCK TABLES `system_status_flags` WRITE;
 /*!40000 ALTER TABLE `system_status_flags` DISABLE KEYS */;
-INSERT INTO `system_status_flags` VALUES (1,0,0,0,1,0,0,0,0),(2,0,0,0,0,0,0,0,0);
+INSERT INTO `system_status_flags` VALUES (1,0,0,0,0,0,0,0,0),(2,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `system_status_flags` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1939,7 +1929,7 @@ CREATE TABLE `system_upgrades` (
 
 LOCK TABLES `system_upgrades` WRITE;
 /*!40000 ALTER TABLE `system_upgrades` DISABLE KEYS */;
-INSERT INTO `system_upgrades` VALUES (1,'update_ECONAPP_','.tgz','/opt/eConnect','ssd-optfs',5),(2,'update_DB_','.sql','database','',7),(3,'update_QUALTEST_','.tgz','/opt/board_tests','ssd-optfs',5),(4,'update_C2_','.tgz','/opt/c2','ssd-optfs',5),(5,'update_AVIOIP_','.tgz','/opt/avioip','ssd-optfs',5),(6,'update_FPGA_','.bin','fpga','',5),(7,'update_IOBOARD_','.bin','ioboard','',7),(8,'update_ECONNECT_','.sh','/mnt/user/local','',7),(9,'update_LIST_','.lst','/opt','ssd-optfs',7),(10,'update_SCENES_','.tgz','/opt/scenes','ssd-optfs',7),(11,'update_TILESTREAM_','.tgz','/opt/tilestream','ssd-optfs',5),(12,'update_SPN_','.bin','spn','',7),(13,'update_MMAP_','.tgz','/mnt/mmap','ssd-mmap',5),(14,'update_TSAPP_','.tgz','/opt/tsApp','ssd-optfs',2),(15,'update_TSIMAGES_','.tgz','/opt/Images','ssd-optfs',2),(16,'update_TSTESTAPPS_','.tgz','/opt/testapps','ssd-optfs',2),(17,'update_TSECONAPP_','.tgz','/opt/eConnect','ssd-optfs',2),(18,'update_TSC2_','.tgz','/opt/c2','ssd-optfs',2),(19,'update_CWRTSAPP','.tgz','/opt/tsApp','ssd-optfs',5),(20,'update_SPN03_','.bin','spn03','',7);
+INSERT INTO `system_upgrades` VALUES (1,'update_ECONAPP_','.tgz','/opt/eConnect','ssd-optfs',5),(2,'update_DB_','.sql','database','',7),(3,'update_QUALTEST_','.tgz','/opt/board_tests','ssd-optfs',5),(4,'update_C2_','.tgz','/opt/c2','ssd-optfs',7),(5,'update_AVIOIP_','.tgz','/opt/avioip','ssd-optfs',5),(6,'update_FPGA_','.bin','fpga','',5),(7,'update_IOBOARD_','.bin','ioboard','',7),(8,'update_ECONNECT_','.sh','/mnt/user/local','',5),(9,'update_LIST_','.lst','/opt','ssd-optfs',7),(10,'update_SCENES_','.tgz','/opt/scenes','ssd-optfs',7),(11,'update_TILESTREAM_','.tgz','/opt/tilestream','ssd-optfs',5),(12,'update_SPN_','.bin','spn','',7),(13,'update_MMAP_','.tgz','/mnt/mmap','ssd-mmap',5),(14,'update_TSAPP_','.tgz','/opt/tsApp','ssd-optfs',2),(15,'update_TSIMAGES_','.tgz','/opt/Images','ssd-optfs',2),(16,'update_TSTESTAPPS_','.tgz','/opt/testapps','ssd-optfs',2),(17,'update_TSECONAPP_','.tgz','/opt/eConnect','ssd-optfs',2),(18,'update_TSC2_','.tgz','/opt/c2','ssd-optfs',2),(19,'update_CWRTSAPP','.tgz','/opt/tsApp','ssd-optfs',5),(20,'update_SPN03_','.bin','spn03','',7);
 /*!40000 ALTER TABLE `system_upgrades` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1983,7 +1973,7 @@ CREATE TABLE `system_versions` (
 
 LOCK TABLES `system_versions` WRITE;
 /*!40000 ALTER TABLE `system_versions` DISABLE KEYS */;
-INSERT INTO `system_versions` VALUES (1,3,0,0,20160826,1,0,0,0,20160527,0,'2016/3/28.1',0,0,'201603211333','201603031426',6,0,0,3,0,'1.0.0'),(2,3,0,0,20160826,0,58,2,0,20160527,0,' ',0,0,'201502271212','201501271338',0,0,0,2,7,'0.2.6');
+INSERT INTO `system_versions` VALUES (1,3,0,0,0,1,2,0,0,0,0,'2016/5/9.1',0,0,'201605181353','201603031426',6,0,0,3,2,'1.0.1'),(2,3,0,0,0,0,58,2,0,7,0,' ',0,0,'201502271212','201501271338',0,0,0,2,7,'0.2.6');
 /*!40000 ALTER TABLE `system_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2101,7 +2091,6 @@ CREATE TABLE `usb_update_files` (
 
 LOCK TABLES `usb_update_files` WRITE;
 /*!40000 ALTER TABLE `usb_update_files` DISABLE KEYS */;
-INSERT INTO `usb_update_files` VALUES (65537,1,'/mnt/user/upload/update_DB_XMALT_CWR451.sql'),(65538,1,'/mnt/user/upload/update_C2_rel_PILATUS_201605031153.tgz'),(65539,1,'/mnt/user/upload/update_DB_CWR451DVT.sql'),(65540,1,'/mnt/user/upload/update_C2_rel_HONDA_20160225-2.tgz'),(65541,1,'/mnt/user/upload/update_DB_PC12_451_test.sql'),(65542,1,'/mnt/user/upload/update_DB_multi_master_ver.sql'),(65543,1,'/mnt/user/upload/update_LIST_4512000_Factory.lst');
 /*!40000 ALTER TABLE `usb_update_files` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2126,7 +2115,7 @@ CREATE TABLE `usb_update_status` (
 
 LOCK TABLES `usb_update_status` WRITE;
 /*!40000 ALTER TABLE `usb_update_status` DISABLE KEYS */;
-INSERT INTO `usb_update_status` VALUES (1,0,7),(2,0,0);
+INSERT INTO `usb_update_status` VALUES (1,0,0),(2,0,0);
 /*!40000 ALTER TABLE `usb_update_status` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2181,7 +2170,7 @@ CREATE TABLE `user_audio` (
 
 LOCK TABLES `user_audio` WRITE;
 /*!40000 ALTER TABLE `user_audio` DISABLE KEYS */;
-INSERT INTO `user_audio` VALUES (65537,1,'13 - Human After All _ Together _ One More Time (Reprise) _ Music Sounds Better With You (Stardust)','/mnt/user/upload/13 - Human After All _ Together _ One More Time (Reprise) _ Music Sounds Better With You (Stardust).mp3',1,1),(65538,1,'04 - Too Long _ Steam Machine','/mnt/user/upload/04 - Too Long _ Steam Machine.mp3',1,1),(65539,1,'11 - Da Funk _ Daftendirekt','/mnt/user/upload/11 - Da Funk _ Daftendirekt.mp3',1,1),(65540,1,'10 - The Prime Time of Your Life _ The Brainwasher _ Rollin\' & Scratchin\' _ Alive','/mnt/user/upload/10 - The Prime Time of Your Life _ The Brainwasher _ Rollin\' & Scratchin\' _ Alive.mp3',1,1),(65541,1,'03 - Television Rules the Nation _ Crescendolls','/mnt/user/upload/03 - Television Rules the Nation _ Crescendolls.mp3',1,1),(65542,1,'08 - One More Time _ Aerodynamic','/mnt/user/upload/08 - One More Time _ Aerodynamic.mp3',1,1),(65543,1,'05 - Around the World _ Harder, Better, Faster, Stronger','/mnt/user/upload/05 - Around the World _ Harder, Better, Faster, Stronger.mp3',1,1),(65544,1,'06 - Burnin\' _ Too Long','/mnt/user/upload/06 - Burnin\' _ Too Long.mp3',1,1),(65545,1,'07 - Face to Face _ Short Circuit','/mnt/user/upload/07 - Face to Face _ Short Circuit.mp3',1,1),(65546,1,'12 - Superheroes _ Human After All _ Rock\'n Roll','/mnt/user/upload/12 - Superheroes _ Human After All _ Rock\'n Roll.mp3',1,1),(65547,1,'09 - Aerodynamic Beats _ Forget About the World','/mnt/user/upload/09 - Aerodynamic Beats _ Forget About the World.mp3',1,1),(65548,1,'01 - Robot Rock _ Oh Yeah','/mnt/user/upload/01 - Robot Rock _ Oh Yeah.mp3',1,1);
+INSERT INTO `user_audio` VALUES (65537,1,'02 - We Are Here To Make Some Noise (Extended Mix)','/mnt/user/upload/02 - We Are Here To Make Some Noise (Extended Mix).mp3',1,1),(65538,1,'07 - Face to Face _ Short Circuit','/mnt/user/upload/07 - Face to Face _ Short Circuit.mp3',1,1),(65539,1,'01 - Robot Rock _ Oh Yeah','/mnt/user/upload/01 - Robot Rock _ Oh Yeah.mp3',1,1),(65540,1,'08 - One More Time _ Aerodynamic','/mnt/user/upload/08 - One More Time _ Aerodynamic.mp3',1,1),(65541,1,'AirReview-Landmarks-02-ChasingCorporate','/mnt/user/upload/c2/src/presentation/themes/pc24/public/media/AirReview-Landmarks-02-ChasingCorporate.mp3',1,1),(65542,1,'06 - Burnin\' _ Too Long','/mnt/user/upload/06 - Burnin\' _ Too Long.mp3',1,1),(65543,1,'12 - Superheroes _ Human After All _ Rock\'n Roll','/mnt/user/upload/12 - Superheroes _ Human After All _ Rock\'n Roll.mp3',1,1),(65544,1,'09 - Aerodynamic Beats _ Forget About the World','/mnt/user/upload/09 - Aerodynamic Beats _ Forget About the World.mp3',1,1),(65545,1,'04 - Too Long _ Steam Machine','/mnt/user/upload/04 - Too Long _ Steam Machine.mp3',1,1),(65546,1,'10 - The Prime Time of Your Life _ The Brainwasher _ Rollin\' & Scratchin\' _ Alive','/mnt/user/upload/10 - The Prime Time of Your Life _ The Brainwasher _ Rollin\' & Scratchin\' _ Alive.mp3',1,1),(65547,1,'11 - Da Funk _ Daftendirekt','/mnt/user/upload/11 - Da Funk _ Daftendirekt.mp3',1,1),(65548,1,'05 - Around the World _ Harder, Better, Faster, Stronger','/mnt/user/upload/05 - Around the World _ Harder, Better, Faster, Stronger.mp3',1,1),(65549,1,'13 - Human After All _ Together _ One More Time (Reprise) _ Music Sounds Better With You (Stardust)','/mnt/user/upload/13 - Human After All _ Together _ One More Time (Reprise) _ Music Sounds Better With You (Stardust).mp3',1,1),(65550,1,'03 - Television Rules the Nation _ Crescendolls','/mnt/user/upload/03 - Television Rules the Nation _ Crescendolls.mp3',1,1);
 /*!40000 ALTER TABLE `user_audio` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2209,7 +2198,7 @@ CREATE TABLE `user_video` (
 
 LOCK TABLES `user_video` WRITE;
 /*!40000 ALTER TABLE `user_video` DISABLE KEYS */;
-INSERT INTO `user_video` VALUES (65541,1,'The Glitch Mob - Fortune Days','/mnt/user/upload/The Glitch Mob - Fortune Days.mp4',1,0),(65540,1,'Spaceballs','/mnt/user/upload/Spaceballs.avi',1,0),(65539,1,'Blaze_test1_WMV-WMV9MP_CBR_320x240_AR4to3_15fps_512kbps_WMA9.2L2_32kbps_44100Hz_Mono','/mnt/user/upload/Blaze_test1_WMV-WMV9MP_CBR_320x240_AR4to3_15fps_512kbps_WMA9.2L2_32kbps_44100Hz_Mono.wmv',1,0),(65538,1,'blaze','/mnt/user/upload/blaze.wmv',1,0),(65537,1,'tears_of_steel_720p','/mnt/user/upload/tears_of_steel_720p.mov',1,1),(65542,1,'The Lion King','/mnt/user/upload/The Lion King.m4v',1,1);
+INSERT INTO `user_video` VALUES (65537,1,'Spaceballs_full','/mnt/user/upload/Spaceballs_full.avi',1,0),(65538,1,'big_buck_bunny','/mnt/user/upload/c2/src/presentation/themes/pc24/public/media/big_buck_bunny.mp4',1,0),(65539,1,'echo-hereweare','/mnt/user/upload/c2/src/presentation/themes/pc24/public/media/echo-hereweare.mp4',1,0),(65540,1,'eot4','/mnt/user/upload/eot4.mp4',1,0);
 /*!40000 ALTER TABLE `user_video` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2343,7 +2332,7 @@ CREATE TABLE `web_albummeta` (
 
 LOCK TABLES `web_albummeta` WRITE;
 /*!40000 ALTER TABLE `web_albummeta` DISABLE KEYS */;
-INSERT INTO `web_albummeta` VALUES ('Alive 2007','Alive 2007','Daft Punk','',NULL,'2007','Electronic');
+INSERT INTO `web_albummeta` VALUES ('Alive 2007','Alive 2007','Daft Punk','',NULL,'2007','Electronic'),('Landmarks - MP3s','Landmarks - MP3s','Air Review','',NULL,'2009',''),('We Are Here To Make Some Noise','We Are Here To Make Some Noise','Armin van Buuren','[object Object]',NULL,'','Dance & DJ');
 /*!40000 ALTER TABLE `web_albummeta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2370,7 +2359,7 @@ CREATE TABLE `web_albumtrackmeta` (
 
 LOCK TABLES `web_albumtrackmeta` WRITE;
 /*!40000 ALTER TABLE `web_albumtrackmeta` DISABLE KEYS */;
-INSERT INTO `web_albumtrackmeta` VALUES ('/mnt/user/upload/01 - Robot Rock _ Oh Yeah.mp3',1,'Robot Rock / Oh Yeah','06:28','Alive 2007'),('/mnt/user/upload/03 - Television Rules the Nation _ Crescendolls.mp3',3,'Television Rules the Nation / Crescendolls','04:51','Alive 2007'),('/mnt/user/upload/04 - Too Long _ Steam Machine.mp3',4,'Too Long / Steam Machine','07:02','Alive 2007'),('/mnt/user/upload/05 - Around the World _ Harder, Better, Faster, Stronger.mp3',5,'Around the World / Harder, Better, Faster, Stronger','05:43','Alive 2007'),('/mnt/user/upload/06 - Burnin\' _ Too Long.mp3',6,'Burnin\' / Too Long','07:12','Alive 2007'),('/mnt/user/upload/07 - Face to Face _ Short Circuit.mp3',7,'Face to Face / Short Circuit','04:56','Alive 2007'),('/mnt/user/upload/08 - One More Time _ Aerodynamic.mp3',8,'One More Time / Aerodynamic','06:11','Alive 2007'),('/mnt/user/upload/09 - Aerodynamic Beats _ Forget About the World.mp3',9,'Aerodynamic Beats / Forget About the World','03:32','Alive 2007'),('/mnt/user/upload/10 - The Prime Time of Your Life _ The Brainwasher _ Rollin\' & Scratchin\' _ Alive.mp3',10,'The Prime Time of Your Life / The Brainwasher / Rollin\' & Scratchin\' / Alive','10:23','Alive 2007'),('/mnt/user/upload/11 - Da Funk _ Daftendirekt.mp3',11,'Da Funk / Daftendirekt','06:38','Alive 2007'),('/mnt/user/upload/12 - Superheroes _ Human After All _ Rock\'n Roll.mp3',12,'Superheroes / Human After All / Rock\'n Roll','05:42','Alive 2007'),('/mnt/user/upload/13 - Human After All _ Together _ One More Time (Reprise) _ Music Sounds Better With You (Stardust).mp3',13,'Human After All / Together / One More Time (Reprise) / Music Sounds Better With You (Stardust)','09:59','Alive 2007');
+INSERT INTO `web_albumtrackmeta` VALUES ('/mnt/user/upload/01 - Robot Rock _ Oh Yeah.mp3',1,'Robot Rock / Oh Yeah','06:28','Alive 2007'),('/mnt/user/upload/02 - We Are Here To Make Some Noise (Extended Mix).mp3',2,'We Are Here To Make Some Noise (Extended Mix)','05:12','We Are Here To Make Some Noise'),('/mnt/user/upload/03 - Television Rules the Nation _ Crescendolls.mp3',3,'Television Rules the Nation / Crescendolls','04:51','Alive 2007'),('/mnt/user/upload/04 - Too Long _ Steam Machine.mp3',4,'Too Long / Steam Machine','07:02','Alive 2007'),('/mnt/user/upload/05 - Around the World _ Harder, Better, Faster, Stronger.mp3',5,'Around the World / Harder, Better, Faster, Stronger','05:43','Alive 2007'),('/mnt/user/upload/06 - Burnin\' _ Too Long.mp3',6,'Burnin\' / Too Long','07:12','Alive 2007'),('/mnt/user/upload/07 - Face to Face _ Short Circuit.mp3',7,'Face to Face / Short Circuit','04:56','Alive 2007'),('/mnt/user/upload/08 - One More Time _ Aerodynamic.mp3',8,'One More Time / Aerodynamic','06:11','Alive 2007'),('/mnt/user/upload/09 - Aerodynamic Beats _ Forget About the World.mp3',9,'Aerodynamic Beats / Forget About the World','03:32','Alive 2007'),('/mnt/user/upload/10 - The Prime Time of Your Life _ The Brainwasher _ Rollin\' & Scratchin\' _ Alive.mp3',10,'The Prime Time of Your Life / The Brainwasher / Rollin\' & Scratchin\' / Alive','10:23','Alive 2007'),('/mnt/user/upload/11 - Da Funk _ Daftendirekt.mp3',11,'Da Funk / Daftendirekt','06:38','Alive 2007'),('/mnt/user/upload/12 - Superheroes _ Human After All _ Rock\'n Roll.mp3',12,'Superheroes / Human After All / Rock\'n Roll','05:42','Alive 2007'),('/mnt/user/upload/13 - Human After All _ Together _ One More Time (Reprise) _ Music Sounds Better With You (Stardust).mp3',13,'Human After All / Together / One More Time (Reprise) / Music Sounds Better With You (Stardust)','09:59','Alive 2007'),('/mnt/user/upload/c2/src/presentation/themes/pc24/public/media/AirReview-Landmarks-02-ChasingCorporate.mp3',-1,'2. Chasing Corporate','04:04','Landmarks - MP3s');
 /*!40000 ALTER TABLE `web_albumtrackmeta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2458,7 +2447,7 @@ CREATE TABLE `web_configuration` (
   `key` varchar(256) COLLATE latin1_general_ci NOT NULL,
   `value` varchar(256) COLLATE latin1_general_ci NOT NULL,
   PRIMARY KEY (`ConfigurationID`)
-) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=104 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2467,7 +2456,7 @@ CREATE TABLE `web_configuration` (
 
 LOCK TABLES `web_configuration` WRITE;
 /*!40000 ALTER TABLE `web_configuration` DISABLE KEYS */;
-INSERT INTO `web_configuration` VALUES (1,'media_seek_speed_init','2'),(2,'media_seek_speed_mult','2'),(3,'clientPath','C:/emteq'),(4,'theme','pc12'),(5,'unsupported_browser_message','Accessing the eConnect Inflight Entertainment System with this browser will not allow for the best user experience. To access the system and provide you with the best user experience, we recommend the latest version of Chrome.'),(6,'unsupported_browser_timeout','0'),(7,'hls_server_url','http://10.0.9.251:8010/indexfile.m3u8'),(10,'map_installed','none'),(17,'whitelist_extensions','aac'),(18,'whitelist_extensions','aiff'),(19,'whitelist_extensions','amr'),(20,'whitelist_extensions','flac'),(21,'whitelist_extensions','mp3'),(22,'whitelist_extensions','m4a'),(23,'whitelist_extensions','wav'),(24,'whitelist_extensions','wma'),(25,'whitelist_extensions','midi'),(26,'whitelist_extensions','ogg'),(27,'whitelist_extensions','wpl'),(28,'whitelist_extensions','3gp'),(29,'whitelist_extensions','avi'),(30,'whitelist_extensions','h264'),(31,'whitelist_extensions','m4v'),(32,'whitelist_extensions','mkv'),(33,'whitelist_extensions','mov'),(34,'whitelist_extensions','mp4'),(35,'whitelist_extensions','mpg'),(36,'whitelist_extensions','ogv'),(37,'whitelist_extensions','wmv'),(38,'whitelist_extensions','ai'),(39,'whitelist_extensions','drw'),(40,'whitelist_extensions','odg'),(41,'whitelist_extensions','svg'),(42,'whitelist_extensions','bmp'),(43,'whitelist_extensions','gif'),(44,'whitelist_extensions','jpg'),(45,'whitelist_extensions','png'),(46,'whitelist_extensions','psd'),(47,'whitelist_extensions','tif'),(48,'whitelist_extensions','tiff'),(49,'whitelist_extensions','tabi'),(50,'whitelist_extensions','abi'),(51,'whitelist_extensions','doc'),(52,'whitelist_extensions','docx'),(53,'whitelist_extensions','docm'),(54,'whitelist_extensions','dot'),(55,'whitelist_extensions','dotm'),(56,'whitelist_extensions','dotx'),(57,'whitelist_extensions','epub'),(58,'whitelist_extensions','ind'),(59,'whitelist_extensions','indd'),(60,'whitelist_extensions','key'),(61,'whitelist_extensions','keynote'),(62,'whitelist_extensions','mpp'),(63,'whitelist_extensions','mpt'),(64,'whitelist_extensions','odf'),(65,'whitelist_extensions','ods'),(66,'whitelist_extensions','odt'),(67,'whitelist_extensions','ott'),(68,'whitelist_extensions','oxps'),(69,'whitelist_extensions','pages'),(70,'whitelist_extensions','pdf'),(71,'whitelist_extensions','pmd'),(72,'whitelist_extensions','pot'),(73,'whitelist_extensions','potx'),(74,'whitelist_extensions','pps'),(75,'whitelist_extensions','ppsx'),(76,'whitelist_extensions','ppt'),(77,'whitelist_extensions','pptm'),(78,'whitelist_extensions','pptx'),(79,'whitelist_extensions','prproj'),(80,'whitelist_extensions','ps'),(81,'whitelist_extensions','pub'),(82,'whitelist_extensions','pwi'),(83,'whitelist_extensions','rep'),(84,'whitelist_extensions','rtf'),(85,'whitelist_extensions','sdd'),(86,'whitelist_extensions','sdw'),(87,'whitelist_extensions','shs'),(88,'whitelist_extensions','snp'),(89,'whitelist_extensions','sxw'),(90,'whitelist_extensions','vsd'),(91,'whitelist_extensions','wdp'),(92,'whitelist_extensions','wps'),(93,'whitelist_extensions','xps'),(94,'whitelist_extensions','csv'),(95,'whitelist_extensions','rtf'),(96,'whitelist_extensions','txt'),(97,'whitelist_extensions','xml'),(98,'whitelist_extensions','xls'),(99,'whitelist_extensions','xlsx'),(100,'whitelist_extensions','xlsm'),(101,'whitelist_extensions','jpeg');
+INSERT INTO `web_configuration` VALUES (1,'media_seek_speed_init','2'),(2,'media_seek_speed_mult','2'),(3,'clientPath','C:/emteq'),(4,'theme','pc24'),(5,'unsupported_browser_message','Accessing the eConnect Inflight Entertainment System with this browser will not allow for the best user experience. To access the system and provide you with the best user experience, we recommend the latest version of Chrome.'),(6,'unsupported_browser_timeout','0'),(7,'hls_server_url','http://10.0.9.251:8010/indexfile.m3u8'),(10,'map_installed','none'),(17,'whitelist_extensions','aac'),(18,'whitelist_extensions','aiff'),(19,'whitelist_extensions','amr'),(20,'whitelist_extensions','flac'),(21,'whitelist_extensions','mp3'),(22,'whitelist_extensions','m4a'),(23,'whitelist_extensions','wav'),(24,'whitelist_extensions','wma'),(25,'whitelist_extensions','midi'),(26,'whitelist_extensions','ogg'),(27,'whitelist_extensions','wpl'),(28,'whitelist_extensions','3gp'),(29,'whitelist_extensions','avi'),(30,'whitelist_extensions','h264'),(31,'whitelist_extensions','m4v'),(32,'whitelist_extensions','mkv'),(33,'whitelist_extensions','mov'),(34,'whitelist_extensions','mp4'),(35,'whitelist_extensions','mpg'),(36,'whitelist_extensions','ogv'),(37,'whitelist_extensions','wmv'),(38,'whitelist_extensions','ai'),(39,'whitelist_extensions','drw'),(40,'whitelist_extensions','odg'),(41,'whitelist_extensions','svg'),(42,'whitelist_extensions','bmp'),(43,'whitelist_extensions','gif'),(44,'whitelist_extensions','jpg'),(45,'whitelist_extensions','png'),(46,'whitelist_extensions','psd'),(47,'whitelist_extensions','tif'),(48,'whitelist_extensions','tiff'),(49,'whitelist_extensions','tabi'),(50,'whitelist_extensions','abi'),(51,'whitelist_extensions','doc'),(52,'whitelist_extensions','docx'),(53,'whitelist_extensions','docm'),(54,'whitelist_extensions','dot'),(55,'whitelist_extensions','dotm'),(56,'whitelist_extensions','dotx'),(57,'whitelist_extensions','epub'),(58,'whitelist_extensions','ind'),(59,'whitelist_extensions','indd'),(60,'whitelist_extensions','key'),(61,'whitelist_extensions','keynote'),(62,'whitelist_extensions','mpp'),(63,'whitelist_extensions','mpt'),(64,'whitelist_extensions','odf'),(65,'whitelist_extensions','ods'),(66,'whitelist_extensions','odt'),(67,'whitelist_extensions','ott'),(68,'whitelist_extensions','oxps'),(69,'whitelist_extensions','pages'),(70,'whitelist_extensions','pdf'),(71,'whitelist_extensions','pmd'),(72,'whitelist_extensions','pot'),(73,'whitelist_extensions','potx'),(74,'whitelist_extensions','pps'),(75,'whitelist_extensions','ppsx'),(76,'whitelist_extensions','ppt'),(77,'whitelist_extensions','pptm'),(78,'whitelist_extensions','pptx'),(79,'whitelist_extensions','prproj'),(80,'whitelist_extensions','ps'),(81,'whitelist_extensions','pub'),(82,'whitelist_extensions','pwi'),(83,'whitelist_extensions','rep'),(84,'whitelist_extensions','rtf'),(85,'whitelist_extensions','sdd'),(86,'whitelist_extensions','sdw'),(87,'whitelist_extensions','shs'),(88,'whitelist_extensions','snp'),(89,'whitelist_extensions','sxw'),(90,'whitelist_extensions','vsd'),(91,'whitelist_extensions','wdp'),(92,'whitelist_extensions','wps'),(93,'whitelist_extensions','xps'),(94,'whitelist_extensions','csv'),(95,'whitelist_extensions','rtf'),(96,'whitelist_extensions','txt'),(97,'whitelist_extensions','xml'),(98,'whitelist_extensions','xls'),(99,'whitelist_extensions','xlsx'),(100,'whitelist_extensions','xlsm'),(101,'whitelist_extensions','jpeg'),(103,'map_resource','10.0.9.1');
 /*!40000 ALTER TABLE `web_configuration` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2569,7 +2558,7 @@ CREATE TABLE `web_pages` (
   KEY `PageTypeID` (`PageTypeID`),
   CONSTRAINT `web_pages_ibfk_1` FOREIGN KEY (`PageTypeID`) REFERENCES `web_pagetypes` (`PageTypeID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `web_pages_ibfk_2` FOREIGN KEY (`ApplicationID`) REFERENCES `web_application` (`ApplicationID`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2578,7 +2567,7 @@ CREATE TABLE `web_pages` (
 
 LOCK TABLES `web_pages` WRITE;
 /*!40000 ALTER TABLE `web_pages` DISABLE KEYS */;
-INSERT INTO `web_pages` VALUES (1,1,1,'Home','',1,0),(2,1,9,'Media','',2,0),(3,1,8,'Map','',6,0),(4,1,7,'Maintenance','',7,0),(5,1,12,'File Manager','',8,0),(6,1,4,'Video','',3,0),(7,1,5,'Audio','',4,0),(8,1,13,'XM','\0',5,0);
+INSERT INTO `web_pages` VALUES (1,1,1,'Home','',10,0),(2,1,9,'Media','',20,0),(3,1,8,'Map','',60,0),(4,1,7,'Maintenance','',70,0),(5,1,12,'File Manager','',80,0),(6,1,4,'Video','',30,0),(7,1,5,'Audio','',40,0),(8,1,13,'XM','',50,0),(9,1,2,'Temperature','',40,0),(10,1,3,'Lighting','',15,0);
 /*!40000 ALTER TABLE `web_pages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2602,7 +2591,7 @@ CREATE TABLE `web_pagetypes` (
 
 LOCK TABLES `web_pagetypes` WRITE;
 /*!40000 ALTER TABLE `web_pagetypes` DISABLE KEYS */;
-INSERT INTO `web_pagetypes` VALUES (1,'home'),(2,'temp'),(3,'lights'),(4,'video'),(5,'audio'),(6,'shades'),(7,'maintenance'),(8,'flight'),(9,'media'),(12,'filemanager'),(13,'xm');
+INSERT INTO `web_pagetypes` VALUES (1,'home'),(2,'temp'),(3,'lighting'),(4,'video'),(5,'audio'),(6,'shades'),(7,'maintenance'),(8,'flight'),(9,'media'),(12,'filemanager'),(13,'xm');
 /*!40000 ALTER TABLE `web_pagetypes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2619,7 +2608,7 @@ CREATE TABLE `web_supported_browsers` (
   `version` varchar(256) NOT NULL,
   `browser` varchar(256) NOT NULL,
   PRIMARY KEY (`SupportedBrowserID`)
-) ENGINE=MyISAM AUTO_INCREMENT=21 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2628,7 +2617,7 @@ CREATE TABLE `web_supported_browsers` (
 
 LOCK TABLES `web_supported_browsers` WRITE;
 /*!40000 ALTER TABLE `web_supported_browsers` DISABLE KEYS */;
-INSERT INTO `web_supported_browsers` VALUES (1,'Mac OS X','6.1','Safari'),(2,'Mac OS X','34','Chrome'),(3,'Windows 8','11','IE'),(4,'Windows 8','34','Chrome'),(5,'Windows 8','28','Firefox'),(6,'iOS','7','Mobile Safari'),(7,'iOS','33','Chrome Mobile iOS'),(8,'Android','33','Chrome Mobile'),(9,'Android','4','Android'),(10,'Windows 7','11','IE'),(11,'Windows 7','34','Chrome'),(12,'Windows 7','28','Firefox'),(13,'Windows XP','11','IE'),(14,'Windows XP','34','Chrome'),(15,'Windows XP','28','Firefox'),(16,'Windows 8.1','11','IE'),(17,'Windows 8.1','34','Chrome'),(18,'Windows 8.1','28','Firefox'),(19,'Android','33','Chrome'),(20,'Android','5','Mozilla'),(21,'Windows',34,'Chrome'),(22,'Widnows',28,'Firefox'),(23,'Windows',11,'IE');
+INSERT INTO `web_supported_browsers` VALUES (1,'Mac OS X','6.1','Safari'),(2,'Mac OS X','34','Chrome'),(3,'Windows 8','11','IE'),(4,'Windows 8','34','Chrome'),(5,'Windows 8','28','Firefox'),(6,'iOS','7','Mobile Safari'),(7,'iOS','33','Chrome Mobile iOS'),(8,'Android','33','Chrome Mobile'),(9,'Android','4','Android'),(10,'Windows 7','11','IE'),(11,'Windows 7','34','Chrome'),(12,'Windows 7','28','Firefox'),(13,'Windows XP','11','IE'),(14,'Windows XP','34','Chrome'),(15,'Windows XP','28','Firefox'),(16,'Windows 8.1','11','IE'),(17,'Windows 8.1','34','Chrome'),(18,'Windows 8.1','28','Firefox'),(19,'Android','33','Chome'),(20,'Windows','34','Chrome'),(21,'Windows','11','IE'),(22,'Windows','28','Firefox');
 /*!40000 ALTER TABLE `web_supported_browsers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2652,7 +2641,7 @@ CREATE TABLE `web_userwidgetactions` (
   KEY `FKIndex2` (`DependentWidgetStateID`),
   CONSTRAINT `web_userwidgetactions_ibfk_1` FOREIGN KEY (`UserWidgetStateID`) REFERENCES `web_userwidgetstate` (`UserWidgetStateID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `web_userwidgetactions_ibfk_2` FOREIGN KEY (`DependentWidgetStateID`) REFERENCES `web_userwidgetstate` (`UserWidgetStateID`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2661,7 +2650,7 @@ CREATE TABLE `web_userwidgetactions` (
 
 LOCK TABLES `web_userwidgetactions` WRITE;
 /*!40000 ALTER TABLE `web_userwidgetactions` DISABLE KEYS */;
-INSERT INTO `web_userwidgetactions` VALUES (1,6,0,NULL,NULL,1,0),(2,7,0,NULL,NULL,2,0),(3,8,0,NULL,NULL,3,0),(4,5,0,NULL,NULL,0,0);
+INSERT INTO `web_userwidgetactions` VALUES (1,6,0,NULL,NULL,1,0),(2,7,0,NULL,NULL,2,0),(3,8,0,NULL,NULL,3,0),(4,5,0,NULL,NULL,0,0),(5,21,0,NULL,NULL,3,0),(6,22,0,NULL,NULL,4,0),(7,23,0,NULL,NULL,1,0),(8,24,0,NULL,NULL,2,0),(9,25,0,NULL,NULL,17,0),(10,26,0,NULL,NULL,18,0),(11,27,0,NULL,NULL,19,0),(12,28,0,NULL,NULL,20,0),(13,29,0,NULL,NULL,23,0),(14,30,0,NULL,NULL,24,0),(15,31,0,NULL,NULL,21,0),(16,32,0,NULL,NULL,22,0),(17,33,0,NULL,NULL,9,0),(18,34,0,NULL,NULL,10,0),(19,35,0,NULL,NULL,11,0),(20,36,0,NULL,NULL,12,0),(21,37,0,NULL,NULL,13,0),(22,38,0,NULL,NULL,14,0),(23,39,0,NULL,NULL,125,0);
 /*!40000 ALTER TABLE `web_userwidgetactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2682,7 +2671,7 @@ CREATE TABLE `web_userwidgetattributes` (
   KEY `FKIndex2` (`UserWidgetID`),
   CONSTRAINT `web_userwidgetattributes_ibfk_1` FOREIGN KEY (`WidgetAttributeID`) REFERENCES `web_widgetattributes` (`WidgetAttributeID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `web_userwidgetattributes_ibfk_2` FOREIGN KEY (`UserWidgetID`) REFERENCES `web_userwidgets` (`UserWidgetID`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=322 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=332 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2691,7 +2680,7 @@ CREATE TABLE `web_userwidgetattributes` (
 
 LOCK TABLES `web_userwidgetattributes` WRITE;
 /*!40000 ALTER TABLE `web_userwidgetattributes` DISABLE KEYS */;
-INSERT INTO `web_userwidgetattributes` VALUES (111,2,23,'0'),(112,2,24,'1'),(113,2,25,'-1'),(114,2,26,'0'),(115,2,27,'3'),(116,2,28,'2'),(117,2,29,'/img/media-icons/output-ped.png'),(120,3,23,'1'),(121,3,24,'2'),(123,3,25,'-1'),(124,3,26,'4'),(125,3,27,'3'),(127,3,29,'/img/media-icons/source-econnect.png'),(128,4,31,'1'),(129,5,31,'0'),(130,2,27,'3'),(131,7,10,'10.0.9.1/slideshow'),(132,7,11,'0'),(143,26,23,'1'),(144,26,24,'8'),(145,26,25,'-1'),(146,26,26,'4'),(147,26,27,'0'),(149,5,35,'0'),(150,4,35,'1'),(200,2,28,'8'),(201,27,23,'1'),(202,27,24,'11'),(203,27,25,'-1'),(204,27,27,'1'),(205,2,28,'11'),(206,26,29,'/img/media-icons/SXM-econnect2.png'),(207,27,29,'/img/media-icons/HLS-econnect.png'),(301,301,9,'2'),(302,302,9,'4'),(303,303,9,'3'),(304,304,9,'5'),(305,305,9,'8'),(306,306,9,'6'),(307,307,9,'7'),(308,308,9,'10'),(309,309,9,'11'),(310,310,9,'12'),(311,311,9,'13'),(312,312,9,'20'),(313,313,9,'1'),(314,314,9,'23'),(315,315,9,'15'),(316,316,9,'14'),(318,300,34,'3'),(319,300,35,'15'),(320,300,36,'10'),(321,300,37,'1');
+INSERT INTO `web_userwidgetattributes` VALUES (111,2,23,'0'),(112,2,24,'1'),(113,2,25,'-1'),(114,2,26,'0'),(115,2,27,'3'),(116,2,28,'2'),(117,2,29,'/img/media-icons/output-ped.png'),(118,9,38,'15'),(119,9,39,'30'),(120,3,23,'1'),(121,3,24,'2'),(122,9,41,'3000'),(123,3,25,'-1'),(124,3,26,'4'),(125,3,27,'3'),(126,9,40,'0.5'),(127,3,29,'/img/media-icons/source-econnect.png'),(128,4,31,'1'),(129,5,31,'0'),(130,2,27,'3'),(131,7,10,'10.0.9.1/slideshow'),(132,7,11,'0'),(143,26,23,'1'),(144,26,24,'8'),(145,26,25,'-1'),(146,26,26,'4'),(147,26,27,'0'),(149,5,35,'0'),(150,4,35,'1'),(200,2,28,'8'),(201,27,23,'1'),(202,27,24,'11'),(203,27,25,'-1'),(204,27,27,'1'),(205,2,28,'11'),(206,26,29,'/img/media-icons/SXM-econnect2.png'),(207,27,29,'/img/media-icons/HLS-econnect.png'),(301,301,9,'2'),(302,302,9,'4'),(303,303,9,'3'),(304,304,9,'5'),(305,305,9,'8'),(306,306,9,'6'),(307,307,9,'7'),(308,308,9,'10'),(309,309,9,'11'),(310,310,9,'12'),(311,311,9,'13'),(312,312,9,'20'),(313,313,9,'1'),(314,314,9,'23'),(315,315,9,'15'),(316,316,9,'14'),(318,300,34,'3'),(319,300,35,'15'),(320,300,36,'10'),(321,300,37,'1'),(322,407,42,'100'),(323,408,42,'100'),(324,409,42,'100'),(325,410,42,'100'),(326,411,42,'100'),(327,412,42,'100'),(328,413,42,'100'),(329,414,42,'100'),(330,415,42,'100'),(331,402,4,'/img/media-icons/source-econnect.png');
 /*!40000 ALTER TABLE `web_userwidgetattributes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2722,7 +2711,7 @@ CREATE TABLE `web_userwidgets` (
   CONSTRAINT `web_userwidgets_ibfk_1` FOREIGN KEY (`PageID`) REFERENCES `web_pages` (`PageID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `web_userwidgets_ibfk_2` FOREIGN KEY (`ParentUserWidgetID`) REFERENCES `web_userwidgets` (`UserWidgetID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `web_userwidgets_ibfk_3` FOREIGN KEY (`WidgetTypeID`) REFERENCES `web_widgettypes` (`WidgetTypeID`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=322 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=417 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2731,7 +2720,7 @@ CREATE TABLE `web_userwidgets` (
 
 LOCK TABLES `web_userwidgets` WRITE;
 /*!40000 ALTER TABLE `web_userwidgets` DISABLE KEYS */;
-INSERT INTO `web_userwidgets` VALUES (1,24,NULL,2,'Media',0,200,NULL,NULL,'',3,0),(2,34,4,2,'PED Streaming',0,0,NULL,NULL,'',1,0),(3,34,5,2,'eConnect AVOD',0,0,NULL,NULL,'',4,0),(4,35,NULL,2,'Output',0,-300,NULL,NULL,'',2,0),(5,35,NULL,2,'Source',0,-300,NULL,NULL,'',1,0),(6,25,NULL,3,NULL,0,0,NULL,NULL,'',1,0),(7,45,NULL,1,'Slideshow',0,0,700,600,'',1,0),(8,27,NULL,4,'Flight Planner',0,10,NULL,NULL,'\0',10,0),(19,48,NULL,4,'Refresh Media Files',300,110,200,NULL,'',2,0),(23,33,NULL,4,'Measurements:',300,20,NULL,NULL,'',3,0),(24,14,NULL,4,'Select Refresh Media Files to update system media and update software files.',10,50,200,0,'',1,0),(25,12,NULL,4,NULL,0,10,520,175,'',4,0),(27,18,NULL,4,'Versions',0,325,NULL,NULL,'',1,0),(28,19,NULL,4,'Update Software',0,200,NULL,NULL,'',5,0),(29,50,NULL,5,'File Manager',0,50,700,400,'',1,0),(300,49,0,3,'FMS Container',0,575,715,125,'',1,0),(301,28,300,3,'Altitude',0,600,0,0,'',1,0),(302,28,300,3,'Airspeed',0,0,0,0,'',2,0),(303,28,300,3,'Mach',0,0,0,0,'',3,0),(304,28,300,3,'Vertical Speed',0,0,0,0,'\0',0,0),(305,28,300,3,'Ground Speed',350,600,0,0,'',4,0),(306,28,300,3,'Latitude',0,0,0,0,'',5,0),(307,28,300,3,'Longitude',0,0,0,0,'',6,0),(308,28,300,3,'Heading',575,600,0,0,'',7,0),(309,28,300,3,'Wind Speed',0,600,0,0,'',8,0),(310,28,300,3,'Wind Direction',200,600,0,0,'',9,0),(311,28,300,3,'Air Temperature',435,600,0,0,'\0',0,0),(312,28,300,3,'Date',0,0,0,0,'\0',0,0),(313,28,300,3,'GMT',0,0,0,0,'\0',0,0),(314,28,300,3,'GMT Offset Destination',500,600,0,0,'\0',0,0),(315,28,300,3,'Time to Destination',250,600,0,0,'\0',0,0),(316,28,300,3,'Dist to Destination',0,600,0,0,'\0',0,0),(317,51,NULL,7,'Audio Library',0,50,700,400,'',1,0),(318,52,NULL,6,'Video Library',0,50,700,400,'',1,0),(319,55,NULL,8,'XM Container',0,50,700,NULL,'',0,0),(320,54,319,8,'XM Player',50,10,600,40,'',0,0),(321,53,319,8,'XM Controls',0,50,700,NULL,'',0,0);
+INSERT INTO `web_userwidgets` VALUES (1,24,NULL,2,'Media',0,200,NULL,NULL,'',3,0),(2,34,4,2,'PED Streaming',0,0,NULL,NULL,'',1,0),(3,34,5,2,'eConnect AVOD',0,0,NULL,NULL,'',4,0),(4,35,NULL,2,'Output',0,-300,NULL,NULL,'',2,0),(5,35,NULL,2,'Source',0,-300,NULL,NULL,'',1,0),(6,25,NULL,3,NULL,0,0,NULL,NULL,'',1,0),(7,45,NULL,1,'Slideshow',0,0,700,600,'',1,0),(8,27,NULL,4,'Flight Planner',0,10,NULL,NULL,'\0',10,0),(9,15,NULL,9,'Temperature',0,50,700,400,'',1,0),(19,48,NULL,4,'Refresh Media Files',300,110,200,NULL,'',2,0),(23,33,NULL,4,'Measurements:',300,20,NULL,NULL,'',3,0),(24,14,NULL,4,'Select Refresh Media Files to update system media and update software files.',10,50,200,0,'',9,0),(25,12,NULL,4,NULL,0,10,520,150,'',4,0),(28,19,NULL,4,'Update Software',0,200,200,70,'',5,0),(29,50,NULL,5,'File Manager',0,50,700,400,'',1,0),(200,18,NULL,4,'Versions',0,345,NULL,NULL,'',0,0),(300,49,0,3,'FMS Container',0,575,715,125,'',1,0),(301,28,300,3,'Altitude',0,600,0,0,'\0',0,0),(302,28,300,3,'Airspeed',0,0,0,0,'\0',0,0),(303,28,300,3,'Mach',0,0,0,0,'\0',0,0),(304,28,300,3,'Vertical Speed',0,0,0,0,'\0',0,0),(305,28,300,3,'Ground Speed',350,600,0,0,'\0',0,0),(306,28,300,3,'Latitude',0,0,0,0,'',0,0),(307,28,300,3,'Longitude',0,0,0,0,'',0,0),(308,28,300,3,'Heading',575,600,0,0,'',0,0),(309,28,300,3,'Wind Speed',0,600,0,0,'',0,0),(310,28,300,3,'Wind Direction',200,600,0,0,'',0,0),(311,28,300,3,'Air Temperature',435,600,0,0,'',0,0),(312,28,300,3,'Date',0,0,0,0,'\0',0,0),(313,28,300,3,'GMT',0,0,0,0,'\0',0,0),(314,28,300,3,'GMT Offset Destination',500,600,0,0,'\0',0,0),(315,28,300,3,'Time to Destination',250,600,0,0,'\0',0,0),(316,28,300,3,'Dist to Destination',0,600,0,0,'\0',0,0),(317,51,NULL,7,'Audio Library',0,50,700,400,'',1,0),(318,52,NULL,6,'Video Library',0,50,700,400,'',1,0),(319,55,NULL,8,'XM Container',0,50,700,NULL,'',0,0),(320,54,319,8,'XM Player',50,10,600,40,'',0,0),(321,53,319,8,'XM Controls',0,50,700,NULL,'',0,0),(400,17,NULL,10,'Zone',0,10,200,300,'',0,0),(402,16,400,10,'Up-Wash',0,60,100,40,'',0,0),(403,16,400,10,'Down-Wash',0,100,100,40,'',0,0),(405,16,400,10,'Spot',0,140,100,40,'',0,0),(407,2,405,10,'Entrance Spot',200,10,0,0,'',0,0),(408,2,402,10,'Entrance Up-Wash',200,10,0,0,'',2,0),(409,2,403,10,'Window Down-Wash',200,140,0,0,'',5,0),(410,2,403,10,'Table Down-Wash',200,260,0,0,'',6,0),(411,2,406,10,'Right Window',200,140,0,0,'\0',0,0),(412,2,405,10,'Right Table',200,140,0,0,'\0',0,0),(413,2,402,10,'Cabin Up-Wash',200,140,0,0,'',0,0),(414,2,403,10,'Cabin Down-Wash',200,10,0,0,'',0,0),(415,2,405,10,'Cabin Spot',200,140,0,0,'',0,0),(416,59,NULL,4,'Language',280,200,200,70,'',1,0);
 /*!40000 ALTER TABLE `web_userwidgets` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2754,7 +2743,7 @@ CREATE TABLE `web_userwidgetstate` (
   KEY `FKIndex2` (`MachineGroupID`),
   CONSTRAINT `web_userwidgetstate_ibfk_1` FOREIGN KEY (`UserWidgetID`) REFERENCES `web_userwidgets` (`UserWidgetID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `web_userwidgetstate_ibfk_2` FOREIGN KEY (`MachineGroupID`) REFERENCES `web_machinegroups` (`MachineGroupID`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2763,7 +2752,7 @@ CREATE TABLE `web_userwidgetstate` (
 
 LOCK TABLES `web_userwidgetstate` WRITE;
 /*!40000 ALTER TABLE `web_userwidgetstate` DISABLE KEYS */;
-INSERT INTO `web_userwidgetstate` VALUES (1,NULL,1,0,0,'{\"current\":0,\"playlist\":0,\"source\":2}'),(2,NULL,2,0,0,NULL),(3,NULL,7,0,0,NULL),(4,NULL,8,0,0,'{\"Waypoints\":[{\"Lat\":45,\"Lon\":100},{\"Lat\":50,\"Lon\":100},{\"Lat\":50,\"Lon\":-100},{\"Lat\":75,\"Lon\":-120}]}'),(5,NULL,19,0,0,NULL),(6,NULL,20,0,0,NULL),(7,NULL,21,0,0,NULL),(8,NULL,22,0,0,NULL);
+INSERT INTO `web_userwidgetstate` VALUES (1,NULL,1,0,0,'{\"current\":0,\"playlist\":0,\"source\":2}'),(2,NULL,2,0,0,NULL),(3,NULL,7,0,0,NULL),(4,NULL,8,0,0,NULL),(5,NULL,19,0,0,NULL),(6,NULL,20,0,0,NULL),(7,NULL,21,0,0,NULL),(8,NULL,22,0,0,NULL),(9,NULL,9,0,180,'null'),(16,NULL,401,0,NULL,NULL),(17,NULL,402,0,NULL,NULL),(18,NULL,403,0,NULL,NULL),(19,NULL,405,0,NULL,NULL),(20,NULL,406,0,NULL,NULL),(21,NULL,407,0,0,'{\"on\":0}'),(22,NULL,407,1,0,'{\"percentage\":0}'),(23,NULL,408,0,0,'{\"on\":0}'),(24,NULL,408,1,0,'{\"percentage\":0}'),(25,NULL,409,0,0,'{\"on\":0}'),(26,NULL,409,1,0,'{\"percentage\":0}'),(27,NULL,410,0,0,'{\"on\":0}'),(28,NULL,410,1,0,'{\"percentage\":0}'),(29,NULL,411,0,0,'{\"on\":1}'),(30,NULL,411,1,0,'{\"percentage\":31784.475}'),(31,NULL,412,0,0,'{\"on\":1}'),(32,NULL,412,1,0,'{\"percentage\":46529.85}'),(33,NULL,413,0,0,'{\"on\":0}'),(34,NULL,413,1,0,'{\"percentage\":0}'),(35,NULL,414,0,0,'{\"on\":0}'),(36,NULL,414,1,0,'{\"percentage\":0}'),(37,NULL,415,0,0,'{\"on\":0}'),(38,NULL,415,1,0,'{\"percentage\":0}');
 /*!40000 ALTER TABLE `web_userwidgetstate` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2795,7 +2784,7 @@ CREATE TABLE `web_videometa` (
 
 LOCK TABLES `web_videometa` WRITE;
 /*!40000 ALTER TABLE `web_videometa` DISABLE KEYS */;
-INSERT INTO `web_videometa` VALUES ('/mnt/user/upload/blaze.wmv','blaze','','20','','','','','',''),('/mnt/user/upload/Blaze_test1_WMV-WMV9MP_CBR_320x240_AR4to3_15fps_512kbps_WMA9.2L2_32kbps_44100Hz_Mono.wmv','Blaze_test1_WMV-WMV9MP_CBR_320x240_AR4to3_15fps_512kbps_WMA9.2L2_32kbps_44100Hz_Mono','','20','','','','','',''),('/mnt/user/upload/Spaceballs.avi','Spaceballs','','01:08','','','','','',''),('/mnt/user/upload/tears_of_steel_720p.mov','tears_of_steel_720p','','12:14','','','','','',''),('/mnt/user/upload/The Glitch Mob - Fortune Days.mp4','The Glitch Mob - Fortune Days','','06:20','','','','','',''),('/mnt/user/upload/The Lion King.m4v','Chapter 1','','01:28:22','','','','','','');
+INSERT INTO `web_videometa` VALUES ('/mnt/user/upload/c2/src/presentation/themes/pc24/public/media/big_buck_bunny.mp4','big_buck_bunny','','01','','','','','',''),('/mnt/user/upload/c2/src/presentation/themes/pc24/public/media/echo-hereweare.mp4','echo-hereweare','','44','','','','','',''),('/mnt/user/upload/eot4.mp4','EDGE','','01:53:27','','','','','',''),('/mnt/user/upload/Spaceballs_full.avi','Spaceballs_full','','01:36:12','','','','','','');
 /*!40000 ALTER TABLE `web_videometa` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2834,7 +2823,7 @@ CREATE TABLE `web_widgetattributes` (
   KEY `FKIndex2` (`WidgetTypeID`),
   CONSTRAINT `web_widgetattributes_ibfk_1` FOREIGN KEY (`WidgetTypeID`) REFERENCES `web_widgettypes` (`WidgetTypeID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `web_widgetattributes_ibfk_2` FOREIGN KEY (`WidgetAttributeTypeID`) REFERENCES `web_widgetattributetypes` (`WidgetAttributeTypeID`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2843,7 +2832,7 @@ CREATE TABLE `web_widgetattributes` (
 
 LOCK TABLES `web_widgetattributes` WRITE;
 /*!40000 ALTER TABLE `web_widgetattributes` DISABLE KEYS */;
-INSERT INTO `web_widgetattributes` VALUES (1,'BitMask',9,1),(2,'BitMask',10,1),(3,'BitMask',11,1),(4,'lopa_image',16,2),(5,'multiple_select',17,3),(6,'image',20,2),(7,'link',20,4),(8,'select',14,3),(9,'gui_code',28,1),(10,'url',30,2),(11,'popup',30,3),(12,'width',30,6),(13,'height',30,6),(14,'location',30,3),(15,'menubar',30,3),(16,'status',30,3),(17,'toolbar',30,3),(18,'scrollbars',30,3),(19,'resizable',30,3),(20,'title',30,5),(21,'value1',31,5),(22,'value2',31,5),(23,'io_type',34,6),(24,'media_channel_type',34,6),(25,'rosen_id',34,6),(26,'avds_record',34,6),(27,'av_type',34,6),(28,'source_media_channel_type',34,6),(29,'image',34,2),(30,'zone',34,6),(31,'multiple_select',35,3),(32,'fault',3001,1),(33,'in_use',3001,2),(34,'elements_in_row',49,6),(35,'left_right_padding',49,6),(36,'top_bottom_padding',49,6),(37,'has_shading',49,3);
+INSERT INTO `web_widgetattributes` VALUES (1,'BitMask',9,1),(2,'BitMask',10,1),(3,'BitMask',11,1),(4,'lopa_image',16,2),(5,'multiple_select',17,3),(6,'image',20,2),(7,'link',20,4),(8,'select',14,3),(9,'gui_code',28,1),(10,'url',30,2),(11,'popup',30,3),(12,'width',30,6),(13,'height',30,6),(14,'location',30,3),(15,'menubar',30,3),(16,'status',30,3),(17,'toolbar',30,3),(18,'scrollbars',30,3),(19,'resizable',30,3),(20,'title',30,5),(21,'value1',31,5),(22,'value2',31,5),(23,'io_type',34,6),(24,'media_channel_type',34,6),(25,'rosen_id',34,6),(26,'avds_record',34,6),(27,'av_type',34,6),(28,'source_media_channel_type',34,6),(29,'image',34,2),(30,'zone',34,6),(31,'multiple_select',35,3),(32,'fault',3001,1),(33,'in_use',3001,2),(34,'elements_in_row',49,6),(35,'left_right_padding',49,6),(36,'top_bottom_padding',49,6),(37,'has_shading',49,3),(38,'min_temp',15,6),(39,'max_temp',15,6),(40,'dx_temp',15,6),(41,'temp_wait',15,6),(42,'drag_interval',2,6);
 /*!40000 ALTER TABLE `web_widgetattributes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2882,7 +2871,7 @@ CREATE TABLE `web_widgettypes` (
   `WidgetTypeID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `label` varchar(256) COLLATE latin1_general_ci DEFAULT NULL,
   PRIMARY KEY (`WidgetTypeID`)
-) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2891,7 +2880,7 @@ CREATE TABLE `web_widgettypes` (
 
 LOCK TABLES `web_widgettypes` WRITE;
 /*!40000 ALTER TABLE `web_widgettypes` DISABLE KEYS */;
-INSERT INTO `web_widgettypes` VALUES (1,'ON_OFF'),(2,'ON_OFF_SLIDER'),(3,'DAYLIGHT'),(4,'QUASAR'),(5,'RGB_FLEX'),(6,'SHADE'),(7,'MODE_BUTTON'),(8,'SCENE_BUTTON'),(9,'LED_GREEN_OFF'),(10,'LED_RED_OFF'),(11,'LED_GREEN_RED'),(12,'GREY_FRAME'),(13,'BLUE_FRAME'),(14,'LABEL'),(15,'TEMP'),(16,'ZONE'),(17,'ZONE_SELECT'),(18,'VERSIONS'),(19,'SOFTWARE_UPDATES'),(20,'IMAGE_MAP'),(21,'REMOTE'),(22,'SHADES_CONTROL'),(23,'TEMP_DISPLAY'),(24,'MEDIA'),(25,'MAP'),(26,'REFRESH_MEDIA_FILES'),(27,'FMS_FLIGHT_PLANNER'),(28,'FMS_LABEL'),(29,'QII'),(30,'LINK_BUTTON'),(31,'TOGGLE'),(32,'LOGIN'),(33,'MEASUREMENT_TOGGLE'),(34,'MEDIA_CHANNEL'),(35,'ICON_SLIDER'),(36,'OUTLET_CONTAINER'),(37,'OUTLET'),(38,'FAULT_CONTAINER'),(39,'VOLUME_CONTROL'),(40,'FAN_CONTROL'),(41,'SOURCE_SELECT'),(42,'MEDIA_SOURCE'),(43,'MEDIA_DISPLAY'),(44,'MEDIA_PLAYER'),(45,'SLIDESHOW'),(46,'DYNAMIC_LABEL'),(47,'GREY_SCENE_BUTTON'),(48,'GREY_REFRESH_MEDIA_FILES'),(49,'FMS_CONTAINER'),(50,'FILE_MANAGER'),(51,'AUDIO'),(52,'VIDEO'),(53,'XM_CONTROLS'),(54,'XM_PLAYER'),(55,'STATIC_FRAME');
+INSERT INTO `web_widgettypes` VALUES (1,'ON_OFF'),(2,'ON_OFF_SLIDER'),(3,'DAYLIGHT'),(4,'QUASAR'),(5,'RGB_FLEX'),(6,'SHADE'),(7,'MODE_BUTTON'),(8,'SCENE_BUTTON'),(9,'LED_GREEN_OFF'),(10,'LED_RED_OFF'),(11,'LED_GREEN_RED'),(12,'GREY_FRAME'),(13,'BLUE_FRAME'),(14,'LABEL'),(15,'TEMP'),(16,'ZONE'),(17,'ZONE_SELECT'),(18,'VERSIONS'),(19,'SOFTWARE_UPDATES'),(20,'IMAGE_MAP'),(21,'REMOTE'),(22,'SHADES_CONTROL'),(23,'TEMP_DISPLAY'),(24,'MEDIA'),(25,'MAP'),(26,'REFRESH_MEDIA_FILES'),(27,'FMS_FLIGHT_PLANNER'),(28,'FMS_LABEL'),(29,'QII'),(30,'LINK_BUTTON'),(31,'TOGGLE'),(32,'LOGIN'),(33,'MEASUREMENT_TOGGLE'),(34,'MEDIA_CHANNEL'),(35,'ICON_SLIDER'),(36,'OUTLET_CONTAINER'),(37,'OUTLET'),(38,'FAULT_CONTAINER'),(39,'VOLUME_CONTROL'),(40,'FAN_CONTROL'),(41,'SOURCE_SELECT'),(42,'MEDIA_SOURCE'),(43,'MEDIA_DISPLAY'),(44,'MEDIA_PLAYER'),(45,'SLIDESHOW'),(46,'DYNAMIC_LABEL'),(47,'GREY_SCENE_BUTTON'),(48,'GREY_REFRESH_MEDIA_FILES'),(49,'FMS_CONTAINER'),(50,'FILE_MANAGER'),(51,'AUDIO'),(52,'VIDEO'),(53,'XM_CONTROLS'),(54,'XM_PLAYER'),(55,'STATIC_FRAME'),(56,'LIGHTING'),(57,'PAGED_VIEW'),(58,'PAGED_VIEWPORT'),(59,'LANGUAGE_DROPDOWN');
 /*!40000 ALTER TABLE `web_widgettypes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2955,6 +2944,7 @@ CREATE TABLE `xm_channel_list` (
 
 LOCK TABLES `xm_channel_list` WRITE;
 /*!40000 ALTER TABLE `xm_channel_list` DISABLE KEYS */;
+INSERT INTO `xm_channel_list` VALUES (1,174,'Influence Franco'),(1,173,'The Verge       '),(1,171,'CBC Country     '),(1,170,'Ici Premiere    '),(1,169,'CBC Radio One   '),(1,166,'FrancoCountry   '),(1,163,'Chansons        '),(1,162,'CBC Radio 3     '),(1,147,'RURAL Radio     '),(1,128,'Joel Osteen     '),(1,127,'Progress        '),(1,125,'Patriot         '),(1,124,'POTUS Politics  '),(1,118,'MSNBC           '),(1,116,'CNN             '),(1,115,'FOX Headlines   '),(1,114,'FOX News Channel'),(1,108,'Today Show Radio'),(1,105,'EW Radio        '),(1,89,'MLBNetwork Radio'),(1,88,'NFL Radio       '),(1,84,'College Sports  '),(1,83,'Bleacher Report '),(1,80,'ESPN Radio      '),(1,76,'Symphony Hall   '),(1,67,'Real Jazz       '),(1,63,'The Message     '),(1,58,'Prime Country   '),(1,57,'No Shoes Radio  '),(1,56,'The Highway     '),(1,53,'Chill           '),(1,51,'BPM             '),(1,49,'Soul Town       '),(1,48,'Heart + Soul    '),(1,47,'SiriusXM FLY    '),(1,46,'The Heat        '),(1,37,'Octane          '),(1,36,'Alt Nation      '),(1,35,'SiriusXMU       '),(1,34,'Lithium         '),(1,33,'1st Wave        '),(1,31,'Tom Petty Radio '),(1,28,'The Spectrum    '),(1,26,'Classic Vinyl   '),(1,25,'Classic Rewind  '),(1,24,'Margaritaville  '),(1,23,'Grateful Dead   '),(1,22,'Pearl Jam Radio '),(1,18,'Yacht Rock Radio'),(1,17,'Love            '),(1,15,'The Pulse       '),(1,14,'The Coffee House'),(1,13,'Velvet          '),(1,10,'Pop2K           '),(1,9,'90s on 9        '),(1,8,'80s on 8        '),(1,7,'70s on 7        '),(1,6,'60s on 6        '),(1,4,'Pitbull         '),(1,2,'Hits 1          '),(1,1,'XM Preview      ');
 /*!40000 ALTER TABLE `xm_channel_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2980,6 +2970,7 @@ CREATE TABLE `xm_config` (
 
 LOCK TABLES `xm_config` WRITE;
 /*!40000 ALTER TABLE `xm_config` DISABLE KEYS */;
+INSERT INTO `xm_config` VALUES (1,3,1,1);
 /*!40000 ALTER TABLE `xm_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3007,6 +2998,7 @@ CREATE TABLE `xm_playing` (
 
 LOCK TABLES `xm_playing` WRITE;
 /*!40000 ALTER TABLE `xm_playing` DISABLE KEYS */;
+INSERT INTO `xm_playing` VALUES (1,1,'XM Preview      ','Twenty One Pilot','844-711-8800    ','Entertainment   ');
 /*!40000 ALTER TABLE `xm_playing` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3057,4 +3049,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-09-01 12:48:07
+-- Dump completed on 2016-08-30  9:57:11

@@ -608,35 +608,19 @@ UNLOCK TABLES;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `fms_data_BUPD` BEFORE UPDATE ON `fms_data` FOR EACH ROW begin
-IF new.arinc_label=320 AND new.value < 0 THEN
- set new.value=180-new.value;
-end if;
-If new.arinc_label=320 AND new.value = 0 THEN
-  if old.value > 170 AND old.value < 190 THEN
-    set new.value = 180;
-  end if;
-end if;
-IF new.arinc_label=316 AND new.value < 0 THEN
-  set new.value=180-new.value;
-end if;
 IF new.arinc_label=213 AND new.value < 0 THEN
-  set new.value=round(-1 * ( new.value + 512 ), 1);
-end if;
-IF new.arinc_label=213 AND new.value > 0 THEN
-  set new.value=round(new.value, 1);
-end if;
-if new.arinc_label=316 OR new.arinc_label=313 OR new.arinc_label=312 OR new.arinc_label=210 THEN
-  set new.value=round(new.value);
+  set new.value=round(-1 * ( new.value + 512 ));
 end if;
 IF new.arinc_label=205 THEN
   set new.value=round(new.value, 2);
 end if;
-IF new.arinc_label!=205 AND new.arinc_label!=310 AND new.arinc_label!=311 THEN
+IF new.arinc_label=320 AND new.value < 0 THEN
+  set new.value=(360+new.value);
+IF new.arinc_label!=205 AND new.arinc_label!=310 AND new.arinc_label!=311 AND new.arinc_label!=150 THEN
   set new.value=round(new.value);
 end if;
-
-
 end */;;
+
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1353,7 +1337,7 @@ CREATE TABLE `rs485_config` (
 
 LOCK TABLES `rs485_config` WRITE;
 /*!40000 ALTER TABLE `rs485_config` DISABLE KEYS */;
-INSERT INTO `rs485_config` VALUES (2,1,1,0,57600,0,8,1,2,0),(3,2,1,0,57600,0,8,1,0,0),(4,3,1,0,9600,0,8,2,2,0);
+INSERT INTO `rs485_config` VALUES (2,1,1,0,57600,0,8,1,2,0),(3,2,1,0,57600,0,8,1,0,0);
 /*!40000 ALTER TABLE `rs485_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1862,7 +1846,7 @@ CREATE TABLE `system_config` (
 
 LOCK TABLES `system_config` WRITE;
 /*!40000 ALTER TABLE `system_config` DISABLE KEYS */;
-INSERT INTO `system_config` VALUES (1,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,0,0,0,1);
+INSERT INTO `system_config` VALUES (1,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,1,0,0,0,1);
 /*!40000 ALTER TABLE `system_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1945,7 +1929,7 @@ CREATE TABLE `system_upgrades` (
 
 LOCK TABLES `system_upgrades` WRITE;
 /*!40000 ALTER TABLE `system_upgrades` DISABLE KEYS */;
-INSERT INTO `system_upgrades` VALUES (1,'update_ECONAPP_','.tgz','/opt/eConnect','ssd-optfs',5),(2,'update_DB_','.sql','database','',7),(3,'update_QUALTEST_','.tgz','/opt/board_tests','ssd-optfs',5),(4,'update_C2_','.tgz','/opt/c2','ssd-optfs',7),(5,'update_AVIOIP_','.tgz','/opt/avioip','ssd-optfs',5),(6,'update_FPGA_','.bin','fpga','',5),(7,'update_IOBOARD_','.bin','ioboard','',7),(8,'update_ECONNECT_','.sh','/mnt/user/local','',5),(9,'update_LIST_','.lst','/opt','ssd-optfs',7),(10,'update_SCENES_','.tgz','/opt/scenes','ssd-optfs',7),(11,'update_TILESTREAM_','.tgz','/opt/tilestream','ssd-optfs',5),(12,'update_SPN_','.bin','spn','',7),(13,'update_MMAP_','.tgz','/mnt/mmap','ssd-mmap',5),(14,'update_TSAPP_','.tgz','/opt/tsApp','ssd-optfs',2),(15,'update_TSIMAGES_','.tgz','/opt/Images','ssd-optfs',2),(16,'update_TSTESTAPPS_','.tgz','/opt/testapps','ssd-optfs',2),(17,'update_TSECONAPP_','.tgz','/opt/eConnect','ssd-optfs',2),(18,'update_TSC2_','.tgz','/opt/c2','ssd-optfs',2),(19,'update_CWRTSAPP','.tgz','/opt/tsApp','ssd-optfs',5),(20,'update_SPN03_','.bin','spn03','',7);
+INSERT INTO `system_upgrades` VALUES (1,'update_ECONAPP_','.tgz','/opt/eConnect','ssd-optfs',7),(2,'update_DB_','.sql','database','',7),(3,'update_QUALTEST_','.tgz','/opt/board_tests','ssd-optfs',7),(4,'update_C2_','.tgz','/opt/c2','ssd-optfs',7),(5,'update_AVIOIP_','.tgz','/opt/avioip','ssd-optfs',5),(6,'update_FPGA_','.bin','fpga','',5),(7,'update_IOBOARD_','.bin','ioboard','',7),(8,'update_ECONNECT_','.sh','/mnt/user/local','',7),(9,'update_LIST_','.lst','/opt','ssd-optfs',7),(10,'update_SCENES_','.tgz','/opt/scenes','ssd-optfs',7),(11,'update_TILESTREAM_','.tgz','/opt/tilestream','ssd-optfs',5),(12,'update_SPN_','.bin','spn','',7),(13,'update_MMAP_','.tgz','/mnt/mmap','ssd-mmap',5),(14,'update_TSAPP_','.tgz','/opt/tsApp','ssd-optfs',2),(15,'update_TSIMAGES_','.tgz','/opt/Images','ssd-optfs',2),(16,'update_TSTESTAPPS_','.tgz','/opt/testapps','ssd-optfs',2),(17,'update_TSECONAPP_','.tgz','/opt/eConnect','ssd-optfs',2),(18,'update_TSC2_','.tgz','/opt/c2','ssd-optfs',2),(19,'update_CWRTSAPP','.tgz','/opt/tsApp','ssd-optfs',1),(20,'update_SPN03_','.bin','spn03','',3);
 /*!40000 ALTER TABLE `system_upgrades` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2583,7 +2567,7 @@ CREATE TABLE `web_pages` (
 
 LOCK TABLES `web_pages` WRITE;
 /*!40000 ALTER TABLE `web_pages` DISABLE KEYS */;
-INSERT INTO `web_pages` VALUES (1,1,1,'Home','',10,0),(2,1,9,'Media','',20,0),(3,1,8,'Map','',60,0),(4,1,7,'Maintenance','',70,0),(5,1,12,'File Manager','',80,0),(6,1,4,'Video','',30,0),(7,1,5,'Audio','',40,0),(8,1,13,'XM','',50,0),(9,1,2,'Temperature','',40,0),(10,1,3,'Lighting','',15,0);
+INSERT INTO `web_pages` VALUES (1,1,1,'Home','',10,0),(2,1,9,'Media','',20,0),(3,1,8,'Map','',60,0),(4,1,7,'Maintenance','',70,0),(5,1,12,'File Manager','',80,0),(6,1,4,'Video','',30,0),(7,1,5,'Audio','',40,0),(8,1,13,'XM','\0',50,0),(9,1,2,'Temperature','',40,0),(10,1,3,'Lighting','',15,0);
 /*!40000 ALTER TABLE `web_pages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3065,4 +3049,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-30  9:57:11
+-- Dump completed on 2016-08-30  9:57:45
