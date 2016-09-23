@@ -616,6 +616,7 @@ IF new.arinc_label=205 THEN
 end if;
 IF new.arinc_label=320 AND new.value < 0 THEN
   set new.value=(360+new.value);
+enf if;
 IF new.arinc_label!=205 AND new.arinc_label!=310 AND new.arinc_label!=311 AND new.arinc_label!=150 THEN
   set new.value=round(new.value);
 end if;

@@ -1,4 +1,4 @@
-BUP-- MySQL dump 10.16  Distrib 10.1.16-MariaDB, for Linux (x86_64)
+-- MySQL dump 10.16  Distrib 10.1.16-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: econnect
 -- ------------------------------------------------------
@@ -618,6 +618,7 @@ IF new.arinc_label=205 THEN
 end if;
 IF new.arinc_label=320 AND new.value < 0 THEN
   set new.value=(360+new.value);
+end if;
 IF new.arinc_label!=205 AND new.arinc_label!=310 AND new.arinc_label!=311 AND new.arinc_label!=150 THEN
   set new.value=round(new.value);
 end if;
