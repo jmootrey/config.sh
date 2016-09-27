@@ -60,12 +60,14 @@ preimage=4
 clean=5
 
 #import settings
-source ./.config.cfg
+# source ./.config.cfg
 
-#update settings
-function cfg_update () {
-sed -i "s,^\($1=\).*,\1'$2'," .config.cfg
-}
+
+#trap ctrl-c - prevents user exit of application. Allow line switch -d 
+if [ "$1" != "-d" ] ; then
+  trap '' 2
+fi
+
 #system variables
 res=0
 ver="2.1.0"
@@ -77,6 +79,12 @@ confdir=${dir}config/
 resfile="c2/src/presentation/resources/resource.json"
 
 
+#update settings
+function cfg_update () {
+sed -i "s,^\($1=\).*,\1'$2'," $cfg_src
+}
+
+
 
 #Header - Create stylized screen header
 function header {
@@ -85,6 +93,28 @@ function header {
   echo -e "| ${green}eConnect${white} Configuration System ${red}$ver${green} | "
   echo -e "--------------------------------------${white}"
   echo " "
+}
+#Determine Platform Type
+function platform {
+  header
+  echo "Select Platform"
+  echo '1. PC12'
+  echo '2. PC24'
+  echo ''
+  while : ; do
+    echo -n 'Enter Selection: '
+    read platform
+    case $platform in
+      1) 
+      cfg_src='./.config_pc12.cfg'
+      break;;
+      2)
+      cfg_src='./.config_pc24.cfg'
+      break;;
+       *) echo 'Invalid Selection';;
+    esac
+  source $cfg_src
+  done
 }
 
 #getconfigfile - Count configuration files that require transfer
@@ -99,11 +129,6 @@ for files in ${dir}config/* ; do
   fi
 done
 }
-
-#trap ctrl-c - prevents user exit of application. Allow line switch -d 
-if [ "$1" != "-d" ] ; then
-  trap '' 2
-fi
 
 #usbkeyselect - List mounted Flash Drives
 function usbkeysel() {
@@ -269,19 +294,13 @@ function isup() {
     up=$(nmap $econip -PN -p ssh 2>/dev/null | grep open)
   sleep 5
   done
-#  up=""
-#  while [[ $up = "" ]]; do
-#    up=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
-#  sleep 5 
-#  done
-#  echo $up
-#  echo -e " ${white} "
+
 }
 
 #Modify software parameters
 function syscon {
 while : ; do
-  source ./.config.cfg
+  source $cfg_src
   header
   echo "Current Settings:"
   echo -e "1. eConnect IP: "${blue}$econip${white}
@@ -320,7 +339,11 @@ while : ; do
       read gfile
       c2=${files[$gfile]}
       if [[  $junk = 2 ]]; then
-        cfg_update c2_450 $c2
+        if [[ $platform = 2 ]]; then
+          cfg_update c2_450 'Not Applicable'
+        else
+          cfg_update c2_450 $c2
+        fi
       else
         cfg_update c2_451 $c2
       fi
@@ -339,7 +362,11 @@ while : ; do
       echo -n "Select Image file: "
       read ifile
       iso=${files[$ifile]}
-      cfg_update iso_450 $iso
+      if [[ $platform = 2 ]]; then
+        cfg_update iso_450 'Not Applicable'
+      else
+        cfg_update iso_450 $iso
+      fi
     ;;
     [5]) 
       echo " "
@@ -379,12 +406,21 @@ while : ; do
       esac
       read sel
       dbfiles=${files[$sel]}
-      case $junk in
-        6) cfg_update db_450_2000 ${files[$sel]};;
-        7) cfg_update db_450_5000 ${files[$sel]};;
-        8) cfg_update db_451_2000 ${files[$sel]};;
-        9) cfg_update db_451_5000 ${files[$sel]};;
-      esac
+      if [[ $platform = 1 ]]; then
+        case $junk in
+          6) cfg_update db_450_2000 ${files[$sel]};;
+          7) cfg_update db_450_5000 ${files[$sel]};;
+          8) cfg_update db_451_2000 ${files[$sel]};;
+          9) cfg_update db_451_5000 ${files[$sel]};;
+        esac
+      else
+        case $junk in
+            6) cfg_update db_450_2000 'Not Applicable';;
+            7) cfg_update db_450_5000 'Not Applicable';;
+            8) cfg_update db_451_2000 ${files[$sel]};;
+            9) cfg_update db_451_5000 ${files[$sel]};;
+        esac
+      fi
     ;;
     [1][0-1]) 
       echo " "
@@ -399,7 +435,11 @@ while : ; do
       read sfile
       scene_file=${files[$sfile]}
       if [[  $junk = 10 ]]; then
-        cfg_update scene_450 $scene_file
+        if [[ $platform = 1 ]]; then
+          cfg_update scene_450 $scene_file
+        else
+          cfg_update scene_450 'Not Applicable'
+        fi
       else
         cfg_update scene_451 $scene_file
       fi
@@ -545,6 +585,7 @@ function config {
 #Collects config params
 #The user will break to here should they want to restart
 while [ $res -eq 1 ] || [ $res -eq 2 ];  do
+  platform
 #Clean up, these all require a reset if the user restarts the script. 
   unset type
   unset sip
@@ -566,7 +607,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
   lang3=""
   lang=""
   break_loop=0
-  platform=0
+ #scp platform=0
   
 #System Configure
   header
@@ -587,45 +628,39 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
     echo -n "Enter Selection: " 
     read type
     case $type in 
-      [1-8]) 
-        echo "Select Platform"
-        echo '1. PC12'
-        echo '2. PC24'
-        echo ''
-        while : ; do
-          echo -n 'Enter Selection: '
-          read platform
-          case $platform in
-            [1-2]) header
-            break;;
-            *) echo 'Invalid Selection';;
-          esac
-        done
-        echo -n "Enter Lot Number: "
-        while : ;do
-          read lot
-	        if [[ $lot = "" ]] ; then
-	          echo -n "Invalid Selection, Enter Lot Number:"
-	        else
-            break
-	        fi
-        done
-      echo -n "Enter Aircraft Tail ID: "
-      read tail
-      echo -n "Will AVIOIP be enabled, (y)es (n)o: " #***Need to determine how to set RUNMODE 5***
-      read sip
-      while : ; do
-        case $sip in
-          y) break;;
-          n) break;;
-          *) echo -n "Invalid Entry: "
-             read sip;;
-        esac
-      done
-      break;;
-      *) echo "Not a valid selection: $type";;
+      [1-4]) 
+        if [[ $platform = 1 ]]; then
+          break
+        else
+          echo 'Invalid Selection for Platform'
+        fi
+      ;;
+      [4-8]) break;;
+      *) echo 'Invalid Selection';;
     esac
   done
+  echo -n "Enter Lot Number: "
+  while : ;do
+    read lot
+    if [[ $lot = "" ]] ; then
+      echo -n "Invalid Selection, Enter Lot Number:"
+    else
+      break
+    fi
+  done
+  echo -n "Enter Aircraft Tail ID: "
+  read tail
+  echo -n "Will AVIOIP be enabled, (y)es (n)o: " #***Need to determine how to set RUNMODE 5***
+  read sip
+  while : ; do
+      case $sip in
+        y) break;;
+        n) break;;
+        *) echo -n "Invalid Entry: "
+           read sip;;
+      esac
+  done
+
   #Begin Lighting Configuration, Skip if PC12 
   
   if [[ $platform = 2 ]]; then
@@ -1122,6 +1157,7 @@ function build {
 
 #pull the variables into the array for processing
 cnt=1
+source $cfg_src
 #create new resource file
 echo -en "{"\\n""\\t"\"default\": ">"$dir"/json/resource.json
 if [[ $platform = 1 ]]; then
@@ -1652,6 +1688,7 @@ while : ; do
     read junk
     case $junk in
       1) res=1
+         platform
          config  #run through config routine
          if [[ $break_loop != 1 ]]; then
            build #build system
@@ -1689,9 +1726,9 @@ while : ; do
           echo -n "Press any key to configure boot options: "
           sys_config
         fi;;
-      5) source ./.config.cfg 
+      5) platform
         syscon
-        source ./.config.cfg;;
+        source $cfg_src;;
       6) firefox 10.0.9.1;;
       7) encoder_update;;
       *) echo "Invalid Entry"
