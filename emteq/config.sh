@@ -1090,6 +1090,7 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
 #if user had entered x, this will restart the script
   if [ $break_loop -eq 1 ]; then
     res=$res 
+    break
   else
     res=0
   fi
