@@ -118,7 +118,7 @@ function platform {
 }
 
 #getconfigfile - Count configuration files that require transfer
-#this function may be depricatedi XXXXXXXXXXXXXXXX
+#this function may be depricated XXXXXXXXXXXXXXXX
 function getconfigfile {
 cnt=1
 config_file_cnt=$( find ${dir}config/ -maxdepth 1 -type f | wc -l )
@@ -739,6 +739,17 @@ while [ $res -eq 1 ] || [ $res -eq 2 ];  do
           echo -ne '\n'${red}'Invalid Selection '${white}'Any Key To Continue'
           read junk
         ;;
+      esac
+    done
+    header
+    PS3="Select Seating Arangment: "
+    select seat in "Executive (Six Seater)" "Executive (Six Seater + Two)" "Executive (Eight Seater)" "Commuter" "Combi"; do
+      case $REPLY in
+        [1-5]) 
+          seat=$REPLY
+          break
+          ;;
+        *) echo "Invalid Select. Please try again."
       esac
     done
   fi
