@@ -59,10 +59,6 @@ image=3
 preimage=4
 clean=5
 
-#import settings
-# source ./.config.cfg
-
-
 #trap ctrl-c - prevents user exit of application. Allow line switch -d 
 if [ "$1" != "-d" ] ; then
   trap '' 2
@@ -77,6 +73,7 @@ dbdir=${dir}db/
 dbstatic=${dir}/dbstatic/
 confdir=${dir}config/
 resfile="c2/src/presentation/resources/resource.json"
+lopa_asset="/home/emteq/csrc/presentation/themes/pc24/public/img/lopa/"
 
 
 #update settings
@@ -117,26 +114,13 @@ function platform {
   done
 }
 
-#getconfigfile - Count configuration files that require transfer
-#this function may be depricated XXXXXXXXXXXXXXXX
-function getconfigfile {
-cnt=1
-config_file_cnt=$( find ${dir}config/ -maxdepth 1 -type f | wc -l )
-for files in ${dir}config/* ; do
-  if [ -f $files ] ; then
-    config_files[$cnt]=$files
-    cnt=$(( cnt + 1))
-  fi
-done
-}
-
 #usbkeyselect - List mounted Flash Drives
 function usbkeysel() {
 cnt=0
-for i in /run/media/emteq/* ; do
-  if [ -d "$i" ]; then
+for list in /run/media/emteq/* ; do
+  if [ -d "$list" ]; then
     cnt=$((cnt + 1))
-    usbkey[$cnt]=$(basename "$i")
+    usbkey[$cnt]=$(basename "$list")
   fi
 done
 header
@@ -228,44 +212,6 @@ function makekey {
   echo "USB flash disk may now be removed"
   echo -n "Press any key to continue."
   read junk
-}
-
-#sendconfig - Use MUTT to email configuration files to EMTEQ
-#XXXXXXXXXXXXXXXXXXXXXXXXXXXXX deprecated Replace w/ new option
-function sendconfig {
-  cnt=1
-  header
-  echo "Checking connection to EMTEQ servers..."
-  while : ; do
-    up=$(curl -Isf www.google.com | grep HTTP/1.1 | awk {'print $2'}) #Dirty check to see if we have external network access
-    if [ "$up" = "200" ] ; then
-      break
-    else 
-      cnt=$(( cnt + 1 ))
-      sleep 5
-    fi
-    if [ $cnt -gt 12 ] ; then
-      echo "Server not found, please check your internet connection."
-      echo "Network reports $up"
-      echo -ne 'Press '${green}'(enter)'${white} 'to exit: '
-      read junk
-      break
-    fi
-  done
-  if [ $cnt -lt 13 ] ; then
-    cnt=1
-    echo "Transmitting..."
-    for i in ${config_files[@]} ; do
-    subj="${i##*/}" 
-     echo "Lot: "$subj | mutt -s $subj emteqeconnect@gmail.com -a $i
-     if [ $? -eq 0 ] ; then #checks return code from mutt. 0 indicated success
-       mv $i ${dir}config/archive/
-     fi
-    done
-    echo "Transmission Complete."
-    sleep 5
-    config_file_cnt=$( find ${dir}config/ -maxdepth 1 -type f | wc -l )
-  fi
 }
 
 #sshpass alias saves a little typing. 
@@ -1247,10 +1193,21 @@ case $type in
 [5-8])
  tar -xzpf ${dir}GUI/$c2_451  -C /home/emteq &> /dev/null
  cp ${dir}json/resource.json /home/emteq/$resfile
+  #Update Lopa assets for seating arrangement. PC24 Only. 
+  if [[ $platform = 2 ]]; then
+    case $seat in
+      1) tar xzf ${dor}assets/lopa_six.tgz -C $lopa_asset;;  
+      2) tar xzf ${dor}assets/lopa_sixandtwo.tgz -C $lopa_asset;; 
+      3) tar xzf ${dor}assets/lopa_eight.tgz -C $lopa_asset;; 
+      4) tar xzf ${dor}assets/lopa_commuter.tgz -C $lopa_asset;; 
+      5) tar xzf ${dor}assets/lopa_combi.tgz -C $lopa_asset;; 
+    esac
+  fi
  tar -czpf ${dir}payload/temp/$c2_451 c2/
  echo "$c2_451" > ${dir}payload/update_LIST_${lot}_Factory.lst
  ;;
 esac
+
 rm -rf /home/emteq/c2
 #process database options
 db_config
@@ -1429,6 +1386,8 @@ echo ""
 echo "Press any key to continue"
 echo ""
 read n
+#test for encoder shell script
+
 
 #remove existing streamer
 echo -e "${red}Removing previous versions.${white}"
@@ -1692,7 +1651,6 @@ while : ; do
   echo "4. eConnect System Test"
   echo "5. Software Preferences"
   echo "6. Test GUI Interface"
-
   echo "7. Update encoder board"
   echo ""
 
