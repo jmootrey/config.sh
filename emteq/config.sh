@@ -1375,6 +1375,7 @@ fi
 
 #update encoder board
 function encoder_update {
+source $cfg_src
 clear
 header
 echo -e "${red}XM Encoder Board Update${white}"
@@ -1386,8 +1387,19 @@ echo ""
 echo "Press any key to continue"
 echo ""
 read n
-#test for encoder shell script
-
+#Install ethernet watchdog
+echo -e ${red}Installing Ethernet Watchdog${white}
+for file in ethtool busybox; do
+  adb push $dir/encoder/$file /sbin
+  adb shell chmod 755 /sbin/$file
+done
+if [[ $? = 0 ]]; then
+  echo -e "Watchdog installation: ${blue}Success${white}"
+else
+  echo -e "${red}Warning, Watchdog Installtion Failed!${white}"
+fi
+adb push $dir/encoder/init.smp.rc /system/etc
+adb shell chmod 644 /system/etc/init.smp.rc
 
 #remove existing streamer
 echo -e "${red}Removing previous versions.${white}"
@@ -1410,12 +1422,13 @@ sleep 2
 echo -e "${red}Installing new package: " $encoder "${white}"
 #install new paclkage
 result=$(adb install $dir/encoder/$encoder | cut -c1-1)
+echo $encoder
 if [ $result = "S" ]; then
   echo " "
-  echo "Success"
-  echo "Starting Service: "
+  echo -e "${blue}Success${white}"
+  echo "Starting Service"
   for i in 1 2; do
-    adb shell am start -n com.in_advantage.iamediastreamer/com.in_advantage.iamediastreamer.MainActivity
+    adb shell am start -n com.in_advantage.iamediastreamer/com.in_advantage.iamediastreamer.MainActivity &>/dev/null
     sleep 1
   done
 else
@@ -1700,7 +1713,8 @@ while : ; do
         syscon
         source $cfg_src;;
       6) firefox 10.0.9.1;;
-      7) encoder_update;;
+      7)  platform 
+        encoder_update;;
       *) echo "Invalid Entry"
          echo -n "Please enter selection: ";;
     esac
