@@ -42,14 +42,14 @@
 #Light Gray   0;37     White         1;37
 
 #Color Blocks
-red='\e[0;91m'
-blue='\e[0;94m'
-green='\e[0;92m'
-purple='\e[0;95m'
+red='\e[0;31m'
+blue='\e[0;34m'
+green='\e[0;32m'
+purple='\e[0;35m'
 nocolor='\e[0m'
 bold='\033[1m'
 normal='\e[39m'
-white='\e[97m'
+white='\e[0;37m'
 black='\e[30m'
 
 #translations for root script functions
