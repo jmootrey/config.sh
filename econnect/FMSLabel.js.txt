@@ -1,0 +1,183 @@
+
+App.Views.FMSLabel = App.Views.BaseWidget.extend({
+    tagName: 'div', 
+    className: 'Widget GreyFrame FMSLabelWidget', 
+    template: window.Templates.FMSLabel, 
+
+    bindMod: function() {
+        this.$digits = this.$el.find( 'span.digits' );
+
+        if ( this.model.attributes.attributes.length != 1 ) {
+
+            return;
+        }
+
+        this.gui_code = this.model.attributes.attributes[ 0 ].value;
+        this.fms_unit = this._getFmsUnitType( this.gui_code );
+
+        var self = this;
+        window.socket.on( 'fms_data:code:' + this.gui_code, this._setValue.bind(this) );
+        this._repeatCheck();
+
+        this.isMetric = window.Measurement == Measurements.METRIC;
+
+        $( window ).on( 'measurement:change', function( ) {
+            console.log('Measurement:Change');
+            this.isMetric = window.Measurement == Measurements.METRIC;
+            if ( this.prevData ) {
+                this._setValue( this.prevData );
+            }
+        }.bind( this ) );
+    },
+
+    _repeatCheck: function() {
+        var self = this;
+        setTimeout( function() {
+            socket.emit( 'fms_data:code', self.gui_code );
+            self._repeatCheck();
+        }, 5000 );
+    },
+
+    _getFmsUnitType: function( value ) {        
+        switch( parseInt(value) ) {
+            case FMS_GUI_CODE.GMT: 
+                return FMS_UNITS.Time1;
+                break;
+            case FMS_GUI_CODE.Destination_GMT_offset: 
+                return FMS_UNITS.Time2;
+                break;
+            case FMS_GUI_CODE.Altitude: 
+            case FMS_GUI_CODE.Altitude_Corrected: 
+                return FMS_UNITS.Feet;
+                break;
+            case FMS_GUI_CODE.Mach: 
+                return FMS_UNITS.Mach;
+                break;
+            case FMS_GUI_CODE.Airspeed: 
+            case FMS_GUI_CODE.Ground_Speed: 
+            case FMS_GUI_CODE.Wind_Speed:
+                return FMS_UNITS.Knots;
+                break;
+            case FMS_GUI_CODE.Vertical_Speed: 
+                return FMS_UNITS.FeetPerMin;
+                break;
+            case FMS_GUI_CODE.Total_Air_Temp: 
+            case FMS_GUI_CODE.Static_Air_Temp: 
+            case FMS_GUI_CODE.Air_temperature:
+                return FMS_UNITS.Celcius;
+                break;
+            case FMS_GUI_CODE.Latitude: 
+            case FMS_GUI_CODE.Longitude: 
+            case FMS_GUI_CODE.Track_Angle: 
+            case FMS_GUI_CODE.True_Heading: 
+            case FMS_GUI_CODE.Wind_Direction: 
+            case FMS_GUI_CODE.Magnetic_Heading: 
+                return FMS_UNITS.Degrees;
+                break;
+            case FMS_GUI_CODE.Distance_to_Destination: 
+                return FMS_UNITS.Nautical;
+                break;
+            case FMS_GUI_CODE.Time_to_Destination: 
+                return FMS_UNITS.Minutes;
+                break;
+            case FMS_GUI_CODE.Origin_Airport_1: 
+            case FMS_GUI_CODE.Origin_Airport_2: 
+            case FMS_GUI_CODE.Destination_Airport_1: 
+            case FMS_GUI_CODE.Destination_Airport_2: 
+                return FMS_UNITS.Code;
+                break;
+            case FMS_GUI_CODE.Date: 
+                return FMS_UNITS.Date;
+                break;
+            case FMS_GUI_CODE.Flight_Plan_Records: 
+                return FMS_UNITS.Count;
+                break;
+            case FMS_GUI_CODE.Equiptment_Info: 
+                return FMS_UNITS.Text;
+                break;
+        }
+        return FMS_UNITS.None;
+    },
+
+    _setValue: function( data ) {
+         
+        this.prevData = data;
+
+        console.log( 'Using GUI Code: ' + this.gui_code );
+
+        if ( !data ) {
+            return;
+        }
+
+        var metric = $('<span></span>');
+
+        console.log( 'FMS Unit: ' + this.fms_unit );
+        var preProcessedValue = data.value;
+        switch( this.fms_unit ) {
+            case FMS_UNITS.Feet:
+
+                if( this.isMetric ) {
+                    // Convert feet to meters
+                    metric.attr('class', 'Meters');
+                    metric.html('m');
+                    preProcessedValue = Math.round(preProcessedValue * 0.3048);  
+                } else {
+                    metric.attr('class', 'Feet');
+                    metric.html('ft');
+                }
+                break;
+            case FMS_UNITS.Mach:
+                metric.attr('class', 'Mach');
+                metric.html('mach');
+                break;
+            case FMS_UNITS.Knots:
+                metric.attr('class', 'Knots');
+                metric.html('knots');
+                break;
+            case FMS_UNITS.Celcius:
+                if( this.isMetric ) {
+                    // Convert to Fahrenheit
+                    metric.attr('class', 'Fahrenheit');
+                    metric.html('f');
+                    preProcessedValue = Math.round(1.8 * preProcessedValue + 32);  
+                } else {
+                    metric.attr('class', 'Celcius');  
+                    metric.html('c');                  
+                }
+                break;
+            case FMS_UNITS.FeetPerMin:
+
+                if( this.isMetric ) {
+                    // Convert to MetersPerMin
+                    metric.attr('class', 'Meters');
+                    metric.html('m/min');
+                    preProcessedValue = Math.round(preProcessedValue * 0.3048);  
+                } else {
+                    metric.attr('class', 'FeetPerMin');
+                    metric.html('ft/min');
+                }
+                break;
+            case FMS_UNITS.Degrees:
+                metric.attr('class', 'Degrees');
+                metric.html('deg');
+                break;
+            case FMS_UNITS.Nautical:
+                metric.attr('class', 'Nautical');
+                metric.html('naut');
+                break;
+            case FMS_UNITS.Minutes:
+                metric.attr('class', 'Minutes');
+                metric.html('min');
+                break;
+        }
+
+        var value = $('<span>' + preProcessedValue + '</span>');
+
+        this.$digits.html( '' );
+        if ( data.value != null ) {
+            this.$digits.append( value );
+            this.$digits.append( metric );
+        }
+    }
+    
+});
