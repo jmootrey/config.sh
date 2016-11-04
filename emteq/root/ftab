@@ -1,3 +1,0 @@
-#!/bin/bash
-#modify fstab
-cp /home/econnect/.resources/fstab/$1 /etc/fstab
