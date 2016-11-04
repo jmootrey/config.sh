@@ -6,22 +6,22 @@
 #this will break if the USB key has more than 1 partition
 
 #get the block device of our ID
-DIR="/home/emteq/.resources/"
+DIR="/home/econnect/.resources/"
 BLKID=$(lsblk | grep -i $2)
 BLKDVPART=$(echo ${BLKID:2:4})
 BLKDVID=$(echo ${BLKID:2:3})
 
 case $1 in
   1) #umount 
-    umount /home/emteq/.resources/mount
+    umount /home/econnect/.resources/mount
     echo "done" >/dev/tcp/localhost/5350
     exit;;
   2) #format	
-      umount -f /run/media/emteq/$2
+      umount -f /run/media/econnect/$2
       #create filesystem
       mkfs.ntfs --fast --label $3 /dev/$BLKDVPART
       #Mount to a know location, our ID has changed. Our block hasn't 
-      mount /dev/$BLKDVPART /home/emteq/.resources/mount
+      mount /dev/$BLKDVPART /home/econnect/.resources/mount
       #let the client know we are done
       echo "done" >/dev/tcp/localhost/5350 
       exit;;
