@@ -1,3 +1,10 @@
 #!/bin/bash
-#modify fstab
-cp /home/econnect/.resources/fstab/$1 /etc/fstab
+#Mount image file
+#cp /home/econnect/.resources/fstab/$1 /etc/fstab
+if [ $1 = 1 ]; then
+  sec=$(fdisk -l /home/econnect/.resources/iso/econnect-firmware.img | grep -i img3 | awk '{print $2}')
+  sec=$((sec*2))
+  mount -o users,rw,offset=$sec,loop /home/econnect/.resources/iso/econnect-firmware.img /home/econnect/.resources/iso/firmware/optfs
+else
+  umount /home/econnect/.resources/iso/firmware/optfs
+fi

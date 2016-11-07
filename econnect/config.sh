@@ -234,7 +234,8 @@ sshpass -f /home/econnect/.id ssh emteq@$econip bash -c "$1"
 function sshc() { sshpass -f /home/econnect/.id scp "$1" ; }
 
 #Function to check econn state
-function isup() {
+function isup {
+  source $cfg_src
   up=no
   while [[ $up != "22/tcp open  ssh" ]]; do
     up=$(nmap $econip -PN -p ssh 2>/dev/null | grep open)
@@ -531,7 +532,6 @@ function config {
 #Collects config params
 #The user will break to here should they want to restart
 while [ $res -eq 1 ] || [ $res -eq 2 ];  do
-  platform
 #Clean up, these all require a reset if the user restarts the script. 
   unset type
   unset sip
@@ -1065,18 +1065,15 @@ if [ $usbselect = "x" ] ; then
 fi
 #preparing image file
 echo 'Preparing Image File'
+ 
 case $type in
-  [1-4])  rsync --progress ${dir}iso/${iso450} ${dir}iso/econnect-firmware.img
-    sudo /root/scripts/ftab ${iso450}.ftab
-  ;;
-  [5-8])  rsync --progress ${dir}iso/${iso451} ${dir}iso/econnect-firmware.img
-  sudo /root/scripts/ftab ${iso451}.ftab
-  ;;
+  [1-4])  rsync --progress ${dir}iso/${iso_450} ${dir}iso/econnect-firmware.img;;
+  [5-8])  rsync --progress ${dir}iso/${iso_451} ${dir}iso/econnect-firmware.img;;
 esac
 
 #mount image
 echo "Mounting Firmware Image."
-mount ${dir}iso/econnect-firmware.img
+sudo /root/scripts/ftab 1
 #copy payload to image
 echo "Copying payload to image"
 echo $preimage ${usbkey[$usbselect]} > /dev/tcp/localhost/5349
@@ -1090,13 +1087,13 @@ junk=$(nc -l 127.0.0.1 -p 5350)
 #user has elevated priv to this script, allows progress to be displayed on screen
 #  sudo /root/scripts/pvimage.sh ${usbkey[$usbselect]}
 #clean up
-mount ${dir}iso/econnect-firmware.img
+sudo /root/scripts/ftab 1
 rm $dbstatic'update_DB_factory.sql'
 rm $dir'payload/temp/'* 
 rm $dir'payload/'*
 echo $clean > /dev/tcp/localhost/5349
 junk=$(nc -l 127.0.0.1 -p 5350)
-umount ${dir}iso/econnect-firmware.img
+sudo /root/scripts/ftab 2
 echo "Transfer Complete, you may remove USB Flash disk."
 echo -e "Press Any Key To Continue."
 read junk
@@ -1692,7 +1689,8 @@ while : ; do
              flash_gen
            fi
          fi;;
-      3) sys_config
+      3) platform
+         sys_config
          break_loop=0;;
       4) switch_functest
         if [[ "$cont" != "x" ]]; then
