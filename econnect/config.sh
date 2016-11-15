@@ -7,7 +7,7 @@
 #apk tools
 #sshpass  
 #openssh 
-#mysql client apk tools
+#mysql client abd tools
 #GNU Coreutils  Firefox
 
 #Changelog
@@ -66,7 +66,7 @@ fi
 
 #system variables
 res=0
-ver="2.1.0"
+ver="2.2.0"
 dir=${PWD}/.resources/
 #"/home/econnect/.resources/"
 dbdir=${dir}db/
@@ -220,9 +220,7 @@ function sshraw() {
 }
 #Passes command to host while hiding output from user
 function sshb() { 
-#echo -e " ${black} " #Hide ssh ouput from user. 
 sshpass -f /home/econnect/.id ssh emteq@$econip bash -c "$1" &>/dev/null 
-#echo -e " ${white} " #return console text to white
 }
 
 #sshpass alias. Passes command to host, makes output available to user
@@ -1246,22 +1244,26 @@ done
 echo " "
 echo "Verifying Connection..."
 while [[ $up != "22/tcp open  ssh" ]]; do ### add breakpoint ***
+  /root/scripts/ifup.sh
   up=$(nmap $econip -PN -p ssh | grep open)
   x=$((x + 1))
   if [ $x -eq 10 ]; then
-  echo " "
-  echo "Connection not found!"
-  echo "Check power and connection"
-  while [[ $x != "" ]]; do
-  echo -e "Press ${green}ENTER${white} to retry or (${red}x${white} to cancel:" 
-  read x
-  if [[ $x = 'x' ]]; then break; fi
-  header
-  echo "Verifying Connection..."
-  done
+    echo " "
+    echo "Connection not found!"
+    echo "Check power and connection"
+    while [[ $x != "" ]]; do
+      echo -e "Press ${green}ENTER${white} to retry or (${red}x${white}) to cancel:" 
+      read x
+    done
+    if [[ $x = 'x' ]]; then 
+      break 
+    fi
+    header
+    echo "Verifying Connection..."
+  #done
   fi
 done
-if [[ $x = 'x' ]]; then break; fi
+if [[ $x = 'x' ]]; then return; fi
 
 #ensure eConnect is on known SSH list or scp copy will not function
 #This method is used over creating keys due to the readonly nature of the
@@ -1336,38 +1338,53 @@ if [[ $badpart = 0 ]]; then   #not elegant, but gets it done.
   echo -e "${red}Installing Configuration Files${white}"
   echo ""
   sshpass -f /home/econnect/.id ssh emteq@$econip bash -c "'/mnt/user/upload/update update_LIST_"$lot"_Factory.lst'"
-  echo ""
-  echo -e "${red}Verifying node is up. Please Wait.${white}"
-  sleep 40
-  mode=0
-  while [[ $mode = 0 ]] ; do
-    isup
-    mode=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
+  while [[ $? != 0 ]] ; do
+    echo -e "${red} WARNING! Configuration Failed ${white}"
+    echo " "
+    echo -ne "Press ${green}(enter)${white} to retry or ${red}(x)${white} to exit:"
+    read retri
+    if [[ $retri =='x' ]]; then
+      break
+    fi
+    sshpass -f /home/econnect/.id ssh emteq@$econip bash -c "'/mnt/user/upload/update update_LIST_"$lot"_Factory.lst'"
   done
-  #Change date to future value to reduce time it takes for tar to complete. 
-  sshbr "'echo "Q3tm36170" | sudo -S date 121220202020'" #use date of local system ***
-  #verify node is up and running before alerting user
-  junk=""
-  while [[ $junk = "" ]];do
-    junk=$(sshbr  "'pgrep node'")
-    sleep 10
-  done
-  echo -e "${red}Configuration Complete${white}"
-  echo ""
-  echo -n "Press any key to continue"
-  read junk
-  header
-  echo "System Configuration Complete"
-  echo "If a USB map install is required then"
-  echo "shutdown eConnect, insert USB thumb drive with"
-  echo "required map to the IFE USB port. Apply power"
-  echo "to eConnect. The eConnect will copy the necessary"
-  echo "files and reboot. This process will take some time."
-  echo " "
-  echo "It is recommended to now set eConnect boot options."
-  echo " "
-  echo -n "Press any key to restart the configuration tool"
-  read junk
+  if [[ $retri == 'x' ]]; then
+      return
+  fi
+  if [[ $? = 0 ]]; then
+    echo ""
+    echo -e "${red}Verifying node is up. Please Wait.${white}"
+    sleep 40
+    mode=0
+    while [[ $mode = 0 ]] ; do
+      isup
+      mode=$(sshbr "'echo "Q3tm36170" | sudo -S cat /root/boot_mode'")
+    done
+    #Change date to future value to reduce time it takes for tar to complete. 
+    sshbr "'echo "Q3tm36170" | sudo -S date 121220202020'" #use date of local system ***
+    #verify node is up and running before alerting user
+    junk=""
+    while [[ $junk = "" ]];do
+      junk=$(sshbr  "'pgrep node'")
+      sleep 10
+    done
+    echo -e "${red}Configuration Complete${white}"
+    echo ""
+    echo -n "Press any key to continue"
+    read junk
+    header
+    echo "System Configuration Complete"
+    echo "If a USB map install is required then"
+    echo "shutdown eConnect, insert USB thumb drive with"
+    echo "required map to the IFE USB port. Apply power"
+    echo "to eConnect. The eConnect will copy the necessary"
+    echo "files and reboot. This process will take some time."
+    echo " "
+    echo "It is recommended to now set eConnect boot options."
+    echo " "
+    echo -n "Press any key to restart the configuration tool"
+    read junk
+  fi
 fi
 }
 
@@ -1676,6 +1693,7 @@ while : ; do
            commit_econnect #commit files to econnect
          fi;;
       2) res=2
+         platform
          config #run through config routine.
          if [[ $break_loop != 1 ]]; then
            header
