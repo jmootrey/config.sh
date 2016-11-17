@@ -1671,7 +1671,6 @@ header
 }
 #main loop
 while : ; do
-  getconfigfile
   header
   echo "1. Configure eConnect System"
   echo "2. Generate Upgrade USB Flash Drive"
@@ -1729,7 +1728,7 @@ while : ; do
       5) platform
         syscon
         source $cfg_src;;
-      6) firefox 10.0.9.1;;
+      6) chromium 10.0.9.1;;
       7)  platform 
         encoder_update;;
       *) echo "Invalid Entry"
