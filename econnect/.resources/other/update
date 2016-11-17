@@ -1,0 +1,21 @@
+#!/bin/bash
+/mnt/user/icdapp REFRESH_MEDIA_FILES 0
+sleep 10
+until [[ $cnt = 6 ]]; do
+  sleep 2
+  cnt=$((cnt+1))
+  response=$(/mnt/user/icdapp UPDATE_SOFTWARE /mnt/user/upload/$1 | grep response=)
+  results=${response: -2:1}
+  if [[ $results = 0 ]]; then
+    break
+  fi
+done
+echo ''
+if [[ $results = 0 ]]; then
+  echo -e '\e[0;94m Installation Succesful, System Will Now Reboot'
+  exit 0
+else
+  echo -e '\e[0;91m Installation Failed, Please Check System Configuration'
+  exit 1
+  echo ''
+fi
